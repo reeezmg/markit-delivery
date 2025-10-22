@@ -1,0 +1,7 @@
+{
+  "name": "markit",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}
