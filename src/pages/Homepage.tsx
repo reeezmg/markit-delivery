@@ -1,15 +1,15 @@
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
+import { IonContent, IonHeader, IonPage, IonTitle, IonButtons,IonMenuButton, IonToolbar } from '@ionic/react';
 import ExploreContainer from '../components/ExploreContainer';
 import './HomePage.css';
+import Topbar from '../components/Topbar';
 
 const Tab1: React.FC = () => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
-          <IonTitle>Tab</IonTitle>
-        </IonToolbar>
-      </IonHeader>
+      <Topbar title='Home'/>
+    </IonHeader>
+
       <IonContent fullscreen>
         <IonHeader collapse="condense">
           <IonToolbar>

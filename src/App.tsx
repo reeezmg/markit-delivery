@@ -1,85 +1,115 @@
 import { Redirect, Route } from 'react-router-dom';
 import {
   IonApp,
+  IonContent,
+  IonHeader,
   IonIcon,
+  IonItem,
   IonLabel,
+  IonList,
+  IonMenu,
+  IonMenuToggle,
+  IonPage,
   IonRouterOutlet,
   IonTabBar,
   IonTabButton,
   IonTabs,
+  IonTitle,
+  IonToolbar,
   setupIonicReact
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { cartSharp, home, person } from 'ionicons/icons';
+import { cartSharp, home, person, menuOutline } from 'ionicons/icons';
 import HomePage from './pages/Homepage';
 import OrdersPage from './pages/OrdersPage';
 import ProfilePage from './pages/ProfilePage';
 import Login from './pages/Login';
 
-/* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
-import '@ionic/react/css/normalize.css';
-import '@ionic/react/css/structure.css';
-import '@ionic/react/css/typography.css';
-import '@ionic/react/css/padding.css';
-import '@ionic/react/css/float-elements.css';
-import '@ionic/react/css/text-alignment.css';
-import '@ionic/react/css/text-transformation.css';
-import '@ionic/react/css/flex-utils.css';
-import '@ionic/react/css/display.css';
-import '@ionic/react/css/palettes/dark.system.css';
 import './theme/variables.css';
 
 setupIonicReact();
 
 const App: React.FC = () => {
-  // Check if user is logged in (e.g., token exists in localStorage)
-  //localStorage.setItem('token', 'abc123'); // key = 'token'
-
-  const isLoggedIn = !!localStorage.getItem('CapacitorStorage.token'); // change 'token' to your key
-  console.log(localStorage.getItem('token'))
+  const isLoggedIn = !!localStorage.getItem('CapacitorStorage.token');
 
   return (
     <IonApp>
       <IonReactRouter>
-        <IonTabs>
+        {isLoggedIn ? (
+          <>
+            {/* 🧭 Sidebar Menu */}
+            <IonMenu contentId="main">
+              <IonHeader>
+                <IonToolbar color="primary">
+                  <IonTitle>Menu</IonTitle>
+                </IonToolbar>
+              </IonHeader>
+              <IonContent>
+                <IonList>
+                  <IonMenuToggle autoHide={true}>
+                    <IonItem routerLink="/home" routerDirection="none">
+                      <IonIcon slot="start" icon={home} />
+                      <IonLabel>Home</IonLabel>
+                    </IonItem>
+                    <IonItem routerLink="/orders" routerDirection="none">
+                      <IonIcon slot="start" icon={cartSharp} />
+                      <IonLabel>Orders</IonLabel>
+                    </IonItem>
+                    <IonItem routerLink="/profile" routerDirection="none">
+                      <IonIcon slot="start" icon={person} />
+                      <IonLabel>Profile</IonLabel>
+                    </IonItem>
+                    <IonItem
+                      button
+                      onClick={() => {
+                        localStorage.removeItem('CapacitorStorage.token');
+                        window.location.href = '/login';
+                      }}
+                    >
+                      <IonIcon slot="start" icon={menuOutline} />
+                      <IonLabel>Logout</IonLabel>
+                    </IonItem>
+                  </IonMenuToggle>
+                </IonList>
+              </IonContent>
+            </IonMenu>
+
+            {/* 🌐 Main App Content */}
+            <IonPage id="main">
+              <IonTabs>
+                <IonRouterOutlet>
+                  <Route exact path="/home" component={HomePage} />
+                  <Route exact path="/orders" component={OrdersPage} />
+                  <Route exact path="/profile" component={ProfilePage} />
+                  <Redirect exact from="/" to="/home" />
+                </IonRouterOutlet>
+
+                <IonTabBar slot="bottom">
+                  <IonTabButton tab="home" href="/home">
+                    <IonIcon icon={home} />
+                    <IonLabel>Home</IonLabel>
+                  </IonTabButton>
+
+                  <IonTabButton tab="orders" href="/orders">
+                    <IonIcon icon={cartSharp} />
+                    <IonLabel>Orders</IonLabel>
+                  </IonTabButton>
+
+                  <IonTabButton tab="profile" href="/profile">
+                    <IonIcon icon={person} />
+                    <IonLabel>Profile</IonLabel>
+                  </IonTabButton>
+                </IonTabBar>
+              </IonTabs>
+            </IonPage>
+          </>
+        ) : (
           <IonRouterOutlet>
-            <Route exact path="/">
-              {isLoggedIn ? <HomePage /> : <Redirect to="/login" />}
-            </Route>
-            <Route exact path="/OrdersPage">
-              {isLoggedIn ? <OrdersPage /> : <Redirect to="/login" />}
-            </Route>
-            <Route path="/ProfilePage">
-              {isLoggedIn ? <ProfilePage /> : <Redirect to="/login" />}
-            </Route>
-            <Route exact path="/login">
-              {!isLoggedIn ? <Login /> : <Redirect to="/" />}
-            </Route>
-            <Route exact path="/">
-              <Redirect to={isLoggedIn ? "/" : "/login"} />
-            </Route>
+            <Route exact path="/login" component={Login} />
+            <Redirect exact from="*" to="/login" />
           </IonRouterOutlet>
-
-          {isLoggedIn && (
-            <IonTabBar slot="bottom">
-              <IonTabButton tab="HomePage" href="/">
-                <IonIcon aria-hidden="true" icon={home} />
-                <IonLabel>Home</IonLabel>
-              </IonTabButton>
-
-              <IonTabButton tab="OrdersPage" href="/OrdersPage">
-                <IonIcon aria-hidden="true" icon={cartSharp} />
-                <IonLabel>Orders</IonLabel>
-              </IonTabButton>
-
-              <IonTabButton tab="ProfilePage" href="/ProfilePage">
-                <IonIcon aria-hidden="true" icon={person} />
-                <IonLabel>Profile</IonLabel>
-              </IonTabButton>
-            </IonTabBar>
-          )}
-        </IonTabs>
+        )}
       </IonReactRouter>
     </IonApp>
   );
