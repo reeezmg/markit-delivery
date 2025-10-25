@@ -7,7 +7,7 @@ export const login = async (phone, otp) => {
 
   if (data.token) {
     await Preferences.set({ key: 'token', value: data.token });
-    await Preferences.set({ key: 'deliveryPartner', value: JSON.stringify(data.deliveryPartner) });
+    await Preferences.set({ key: 'deliveryPartner', value: JSON.stringify(data.partner) });
   }    
 
 };
