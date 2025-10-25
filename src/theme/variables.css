@@ -1,2 +1,43 @@
 /* For information on how to create your own theme, please see:
 http://ionicframework.com/docs/theming/ */
+
+/* For information on how to create your own theme, please see:
+http://ionicframework.com/docs/theming/ */
+@import "tailwindcss";
+
+:root {
+  /** Primary **/
+  --ion-color-primary: #097D4C;
+  --ion-color-primary-rgb: 9, 125, 76;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #086f44; /* darker shade for pressed state */
+  --ion-color-primary-tint: #21936a;  /* lighter tint for hover/active */
+  
+  /** Optional extra color you already added **/
+  --ion-color-tertiary: #F8FDF3;
+  --ion-font-family: 'Nunito', sans-serif;
+}
+
+html, body, ion-app {
+  font-family: var(--ion-font-family) !important;
+   letter-spacing: 0.3px;
+   background-color: #f1f1f1;
+}
+
+ion-content::part(scroll) {
+  -ms-overflow-style: none;  /* IE, Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+ion-content::part(scroll)::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari */
+}
+
+.mobile-container {
+  width: 375px;         /* iPhone width */
+  max-width: 100%;      /* don’t overflow on small screens */
+  margin: 0 auto;       /* center horizontally */
+  border: 1px solid #ddd; /* optional: phone frame */
+  box-shadow: 0 0 20px rgba(0,0,0,0.1); /* optional */
+}

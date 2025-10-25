@@ -1,0 +1,17 @@
+ion-tab-bar {
+  border-top: 1px solid #ccc; /* optional top border */
+}
+
+ion-tab-button {
+  position: relative;
+}
+
+ion-tab-button:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 25%;
+  height: 50%;
+  width: 1px;
+  background-color: #ccc;
+}

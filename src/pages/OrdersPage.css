@@ -1,0 +1,44 @@
+.orders-content {
+  --background: linear-gradient(180deg, #f9fafc 0%, #ffffff 100%);
+  padding: 16px;
+}
+
+.orders-section {
+  margin-bottom: 28px;
+}
+
+.orders-section h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 12px 0;
+  color: #1e293b;
+}
+
+.order-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.order-card:hover {
+  transform: scale(1.01);
+}
+
+.order-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Different color vibes per status */
+.order-card.active {
+  border-left: 4px solid #3b82f6;
+}
+
+.order-card.completed {
+  border-left: 4px solid #16a34a;
+}
+
+.order-card.scheduled {
+  border-left: 4px solid #f59e0b;
+}
