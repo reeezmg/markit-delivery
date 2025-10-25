@@ -1,43 +1,71 @@
-/* For information on how to create your own theme, please see:
-http://ionicframework.com/docs/theming/ */
-
-/* For information on how to create your own theme, please see:
-http://ionicframework.com/docs/theming/ */
-@import "tailwindcss";
-
 :root {
-  /** Primary **/
-  --ion-color-primary: #097D4C;
-  --ion-color-primary-rgb: 9, 125, 76;
+  /* ===== Primary Brand ===== */
+  --ion-color-primary: #a50505;
+  --ion-color-primary-rgb: 165, 5, 5;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #086f44; /* darker shade for pressed state */
-  --ion-color-primary-tint: #21936a;  /* lighter tint for hover/active */
-  
-  /** Optional extra color you already added **/
-  --ion-color-tertiary: #F8FDF3;
+  --ion-color-primary-shade: #860404;
+  --ion-color-primary-tint: #c70a0a;
+
+  /* ===== Secondary ===== */
+  --ion-color-secondary: #f5b400;
+  --ion-color-secondary-rgb: 245, 180, 0;
+  --ion-color-secondary-contrast: #000000;
+  --ion-color-secondary-contrast-rgb: 0, 0, 0;
+  --ion-color-secondary-shade: #d99e00;
+  --ion-color-secondary-tint: #f8c833;
+
+  /* ===== Tertiary ===== */
+  --ion-color-tertiary: #f8fdf3;
+  --ion-color-tertiary-rgb: 248, 253, 243;
+
+  /* ===== Feedback Colors ===== */
+  --ion-color-success: #2dd55b;
+  --ion-color-warning: #ffcc00;
+  --ion-color-danger: #e63946;
+
+  /* ===== Neutral Colors ===== */
+  --ion-color-medium: #92949c;
+  --ion-color-light: #f4f4f4;
+
+  /* ===== Typography ===== */
   --ion-font-family: 'Nunito', sans-serif;
 }
 
-html, body, ion-app {
+/* Font + background defaults */
+html,
+body,
+ion-app {
   font-family: var(--ion-font-family) !important;
-   letter-spacing: 0.3px;
-   background-color: #f1f1f1;
+  letter-spacing: 0.3px;
+  background-color: var(--ion-color-light);
 }
 
+/* Optional: consistent scrollbar behavior */
 ion-content::part(scroll) {
-  -ms-overflow-style: none;  /* IE, Edge */
-  scrollbar-width: none;     /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 ion-content::part(scroll)::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari */
+  display: none;
 }
 
+/* Optional: Mobile preview container for desktop */
 .mobile-container {
-  width: 375px;         /* iPhone width */
-  max-width: 100%;      /* don’t overflow on small screens */
-  margin: 0 auto;       /* center horizontally */
-  border: 1px solid #ddd; /* optional: phone frame */
-  box-shadow: 0 0 20px rgba(0,0,0,0.1); /* optional */
+  width: 375px;
+  max-width: 100%;
+  margin: 0 auto;
+  border: 1px solid #ddd;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Enable Ionic color variants */
+.ion-color-primary {
+  --ion-color-base: var(--ion-color-primary);
+  --ion-color-base-rgb: var(--ion-color-primary-rgb);
+  --ion-color-contrast: var(--ion-color-primary-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-primary-contrast-rgb);
+  --ion-color-shade: var(--ion-color-primary-shade);
+  --ion-color-tint: var(--ion-color-primary-tint);
 }

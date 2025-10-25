@@ -16,13 +16,18 @@ import {
   IonRow,
   IonCol,
 } from '@ionic/react';
-
-
-
+import './ActiveOrderDetailsPage.css';
 
 const ActiveOrderDetailsPage: React.FC = () => {
+
+  const orderDetails = [
+    { label: 'Customer Name', value: 'Irfan Paan' },
+    { label: 'From', value: 'Centro Nexus Fiza, 2nd Floor, Pandeshwar, Mangalore - 575 001' },
+    { label: 'To', value: 'Prime Homes, Mulihitlu, Bolar, Mangalore - 575 001' },
+  ];
+
   const items = [
-    { name: 'Paneer Butter Masala', qty: 2 },
+    { name: 'Paneer Butter Masala with Ghee', qty: 2 },
     { name: 'Garlic Naan', qty: 4 },
     { name: 'Jeera Rice', qty: 1 },
   ];
@@ -40,40 +45,56 @@ const ActiveOrderDetailsPage: React.FC = () => {
 
       <IonContent fullscreen>
         <IonCard>
-          <IonCardHeader>
-            <IonCardTitle>Restaurant: The Spice Hub</IonCardTitle>
-          </IonCardHeader>
-          <IonCardContent>
-            <IonLabel><strong>Customer:</strong> John Doe</IonLabel><br />
-            <IonLabel><strong>From:</strong> The Spice Hub</IonLabel><br />
-            <IonLabel><strong>To:</strong> Green Avenue</IonLabel><br /><br />
+          <div className='active-order-wrapper'>
 
-            <IonGrid>
-              <IonRow>
-                <IonCol><strong>Item</strong></IonCol>
-                <IonCol><strong>Qty</strong></IonCol>
-              </IonRow>
-              {items.map((item, index) => (
-                <IonRow key={index}>
-                  <IonCol>{item.name}</IonCol>
-                  <IonCol>{item.qty}</IonCol>
+            <IonCardContent>
+              <IonCardHeader>
+                <IonCardTitle className='current-order-title'>Centro Nexus Fiza</IonCardTitle>
+              </IonCardHeader>
+
+              <div className='order-details-summary-wrapper'>
+                <IonGrid>
+                  {orderDetails.map((item, index) => (
+                    <IonRow key={index} className='order-details-summary-row'>
+                      <IonCol className='order-label-col'>{item.label}</IonCol>
+                      <IonCol className='order-value-col'>{item.value}</IonCol>
+                    </IonRow>
+                  ))}
+                </IonGrid>
+              </div>
+
+
+              <IonCardHeader>
+                <IonCardTitle className='order-summary-title'>Order Summary</IonCardTitle>
+              </IonCardHeader>
+              <IonGrid>
+                <IonRow className='item-listing-header'>
+                  <IonCol>Item</IonCol>
+                  <IonCol>Qty</IonCol>
                 </IonRow>
-              ))}
-            </IonGrid>
+                {items.map((item, index) => (
+                  <IonRow key={index} className='order-details-summary-row'>
+                    <IonCol>{item.name}</IonCol>
+                    <IonCol className='order-value-col'>{item.qty}</IonCol>
+                  </IonRow>
+                ))}
+              </IonGrid>
 
-            <div
-              style={{
-                height: '200px',
-                background: '#ddd',
-                marginTop: '20px',
-                borderRadius: '8px',
-                textAlign: 'center',
-                lineHeight: '200px',
-              }}
-            >
-              🗺️ Map Placeholder
-            </div>
-          </IonCardContent>
+              <div
+                style={{
+                  height: '200px',
+                  background: '#ddd',
+                  marginTop: '20px',
+                  borderRadius: '8px',
+                  textAlign: 'center',
+                  lineHeight: '200px',
+                }}
+              >
+                🗺️ Map Placeholder
+              </div>
+            </IonCardContent>
+          </div>
+
         </IonCard>
       </IonContent>
     </IonPage>

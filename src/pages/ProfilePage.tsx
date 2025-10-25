@@ -20,9 +20,9 @@ const ProfilePage: React.FC = () => {
     <IonPage>
       {/* 🔹 Header */}
       <IonHeader>
-        <IonToolbar color="primary">
-          <IonTitle style={{ textAlign: 'center', fontWeight: 'bold', letterSpacing: '2px' }}>
-            PROFILE
+        <IonToolbar>
+          <IonTitle style={{ textAlign: 'center', fontWeight: 'bold', letterSpacing: '0.5px', fontSize: '22px' }}>
+            Profile
           </IonTitle>
         </IonToolbar>
       </IonHeader>
@@ -47,7 +47,7 @@ const ProfilePage: React.FC = () => {
 
         {/* 🔹 Navigation Buttons */}
         <div className="profile-buttons">
-          <IonButton expand="block"  routerLink="/PersonalDetailsPage">
+          <IonButton expand="block" routerLink="/PersonalDetailsPage">
             Personal Details
           </IonButton>
           <IonButton expand="block" routerLink="/BankDetailsPage">

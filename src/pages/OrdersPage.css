@@ -3,21 +3,80 @@
   padding: 16px;
 }
 
+.my-orders-header {
+  box-shadow: 0 0.5px 0px 0px rgba(0, 0, 0, 0.5);
+}
+
 .orders-section {
   margin-bottom: 28px;
+}
+
+.orders-container {
+  padding: 14px;
 }
 
 .orders-section h2 {
   font-size: 18px;
   font-weight: 600;
-  margin: 12px 0;
-  color: #1e293b;
+  margin: 8px 0;
+  color: #3b331e;
 }
 
 .order-card {
-  border-radius: 16px;
+  border-radius: 2px;
+  padding: 3px 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s ease;
+}
+
+.order-card-title {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.subheader-from {
+  margin-block: 10px 3px;
+}
+
+.subheader-to {
+  margin-block: 3px;
+}
+
+.order-number-title {
+  font-weight: 700;
+}
+
+.status-container {
+  padding-block: 2px 4px;
+  padding-inline: 2px 4px;
+}
+
+.order-details-wrapper {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 6px;
+}
+
+ion-card-header {
+  display: flex;
+  flex-direction: column !important;
+}
+
+.order-status-badge {
+  padding: 3px 6px;
+  font-size: 0.75rem;
+  width: 100px;
+  max-width: 100px;
+}
+
+.all-order-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 18px;
+  padding: 6px 0px;
+  color: #000000;
+  font-weight: 600;
 }
 
 .order-card:hover {
