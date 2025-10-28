@@ -8,52 +8,111 @@ import {
   IonAvatar,
   IonCard,
   IonCardContent,
-  IonButton
+  IonItem,
+  IonIcon,
+  IonLabel,
+  IonButton,
 } from '@ionic/react';
+import {
+  callOutline,
+  mailOutline,
+  locationOutline,
+  arrowForward,
+  waterOutline,
+} from 'ionicons/icons';
 import './ProfilePage.css';
 
 const ProfilePage: React.FC = () => {
-  const userName = 'Mohammed';
-  const partnerId = 'DP-123456';
+  const user = {
+    name: 'John Brito',
+    phone: '(+91) 123 456 7890',
+    email: 'johnbrito@email.com',
+    address: 's221B, Baker Street, Chennai - 123456',
+    bloodGroup: 'O +ve',
+    image: 'https://cdn-icons-png.flaticon.com/512/219/219983.png',
+  };
 
   return (
     <IonPage>
-      {/* 🔹 Header */}
       <IonHeader>
-        <IonToolbar>
-          <IonTitle style={{ textAlign: 'center', fontWeight: 'bold', letterSpacing: '0.5px', fontSize: '22px' }}>
-            Profile
-          </IonTitle>
+        <IonToolbar color="primary">
+          <IonTitle className="profile-header">Profile</IonTitle>
         </IonToolbar>
       </IonHeader>
 
-      {/* 🔹 Content */}
       <IonContent fullscreen className="profile-content">
         <IonCard className="profile-card">
           <IonCardContent>
             <IonAvatar className="profile-avatar">
-              <img
-                src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                alt="Profile"
-              />
+              <img src={user.image} alt="Profile" />
             </IonAvatar>
 
-            <div className="profile-text">
-              <h2 className="profile-name"><strong>{userName}</strong></h2>
-              <p className="profile-id">Delivery Partner ID: <strong>{partnerId}</strong></p>
+            <h2 className="profile-name-header">{user.name}</h2>
+
+            <div className="profile-info">
+              <IonItem lines="none" className="info-item">
+                <IonIcon icon={waterOutline} slot="start" color="primary" />
+                <IonLabel>{user.bloodGroup}</IonLabel>
+              </IonItem>
+
+
+              <IonItem lines="none" className="info-item">
+                <IonIcon icon={callOutline} slot="start" color="primary" />
+                <IonLabel>{user.phone}</IonLabel>
+              </IonItem>
+
+              <IonItem lines="none" className="info-item">
+                <IonIcon icon={mailOutline} slot="start" color="primary" />
+                <IonLabel>{user.email}</IonLabel>
+              </IonItem>
+
+              <IonItem lines="none" className="info-item">
+                <IonIcon icon={locationOutline} slot="start" color="primary" />
+                <IonLabel>{user.address}</IonLabel>
+              </IonItem>
+            </div>
+
+
+            <div className="profile-buttons">
+
+
+              <IonButton
+                expand="block"
+                color="medium"
+                shape="round"
+                className="bank-button"
+                routerLink="/BankDetailsPage"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 600,
+                  letterSpacing: "0.3px"
+                }}
+              >
+                Bank Details
+                <IonIcon
+                  icon={arrowForward}
+                  slot="end"
+                  style={{ marginLeft: "8px", fontSize: "18px" }}
+                />
+              </IonButton>
+
+
+              <IonButton
+                expand="block"
+                color="primary"
+                shape="round"
+                className="edit-button"
+                routerLink="/EditPersonalDetailsPage"
+              >
+                Edit Personal Info
+              </IonButton>
+
+
             </div>
           </IonCardContent>
         </IonCard>
-
-        {/* 🔹 Navigation Buttons */}
-        <div className="profile-buttons">
-          <IonButton expand="block" routerLink="/PersonalDetailsPage">
-            Personal Details
-          </IonButton>
-          <IonButton expand="block" routerLink="/BankDetailsPage">
-            Bank Details
-          </IonButton>
-        </div>
       </IonContent>
     </IonPage>
   );

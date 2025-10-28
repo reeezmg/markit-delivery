@@ -23,13 +23,17 @@ import './OrdersPage.css';
 
 
 import { useHistory } from 'react-router-dom';
+import { Order, OrderStatus } from '../types/types';
 
 const OrdersPage: React.FC = () => {
   const history = useHistory();
 
   const openActiveOrder = () => history.push('/ActiveOrderDetails');
-  const openLastOrder = () => history.push('/LastOrderDetails');
+  const openLastOrder = (orderId: string) => history.push(`/LastOrderDetails/${orderId}`);
   const openAllOrders = () => history.push('/AllOrderDetails');
+
+  const lastOrder: Order =
+    { id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d', orderNumber: '4523', from: "Centro", to: "Green Avenue", earned: 230, status: OrderStatus.Completed }
 
   return (
 
@@ -69,7 +73,7 @@ const OrdersPage: React.FC = () => {
           {/* Last Order */}
           <section className="orders-section">
             <h2>Last Order</h2>
-            <IonCard button onClick={openLastOrder} className="order-card completed">
+            <IonCard button onClick={() => openLastOrder(lastOrder.id)} className="order-card completed">
               <IonCardHeader>
                 <IonCardTitle className='order-card-title'>Order <span className='order-number-title'> #4523 </span></IonCardTitle>
                 <div className='order-details-wrapper'>

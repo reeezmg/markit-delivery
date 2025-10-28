@@ -1,4 +1,9 @@
 .active-order-wrapper {
+
+    .order-title-header-wrapper {
+        padding: 0;
+    }
+
     .card-amount-earned-wrapper {
         display: flex;
         flex-direction: column;
@@ -20,7 +25,8 @@
             .amount-earned-bold {
                 font-size: 60px;
                 font-weight: 700;
-                line-height: 1.2;
+                line-height: 0px;
+                margin-block: 40px;
             }
 
             .amount-earned-subtext {
@@ -30,5 +36,31 @@
                 font-weight: 600;
             }
         }
+    }
+
+    .total-collected-wrapper {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-top: 1px solid #e0e0e0;
+        border-bottom: 1px solid #e0e0e0;
+        margin-top: 12px;
+
+        .total-collected-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e1e1e;
+        }
+
+    }
+
+    .total-collected-amount-wrapper {
+        margin-top: 16px;
+        padding: 16px;
+        background: #f0f0f0;
+        border-radius: 8px;
+        text-align: center;
+        color: #000000;
+        font-weight: 600;
     }
 }

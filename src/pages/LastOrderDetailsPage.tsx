@@ -56,7 +56,7 @@ const LastOrderDetailsPage: React.FC = () => {
               </div>
             </div>
             <IonCardContent>
-              <IonCardHeader>
+              <IonCardHeader className='order-title-header-wrapper'>
                 <IonCardTitle className='current-order-title'>Order #4512</IonCardTitle>
               </IonCardHeader>
 
@@ -73,7 +73,7 @@ const LastOrderDetailsPage: React.FC = () => {
               </div>
 
 
-              <IonCardHeader>
+              <IonCardHeader className='order-title-header-wrapper'>
                 <IonCardTitle className='order-summary-title'>Order Summary</IonCardTitle>
               </IonCardHeader>
               <IonGrid>
@@ -89,14 +89,7 @@ const LastOrderDetailsPage: React.FC = () => {
                 ))}
               </IonGrid>
               <div
-                style={{
-                  marginTop: '16px',
-                  padding: '10px',
-                  background: '#f0f0f0',
-                  borderRadius: '8px',
-                  textAlign: 'center',
-                  color: '#000000',
-                }}
+                className='total-collected-amount-wrapper'
               >
                 <IonLabel>Total Collected: </IonLabel> ₹230
               </div>
@@ -105,8 +98,8 @@ const LastOrderDetailsPage: React.FC = () => {
           </div>
 
         </IonCard>
-      </IonContent>
-    </IonPage>
+      </IonContent >
+    </IonPage >
   );
 };
 

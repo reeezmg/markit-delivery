@@ -27,6 +27,7 @@
   padding: 3px 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s ease;
+  margin-inline: 0;
 }
 
 .order-card-title {

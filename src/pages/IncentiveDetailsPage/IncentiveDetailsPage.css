@@ -1,0 +1,225 @@
+:root {
+    --primary: #a50505;
+    --card-bg: #ffffff;
+    --text-dark: #1a1a1a;
+    --light-gray: #f8f8f8;
+    --border-radius: 18px;
+    --shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.incentive-card {
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    background: var(--card-bg);
+    padding: 18px 16px;
+    margin: 10px auto;
+    max-width: 400px;
+}
+
+.header-section {
+    text-align: left;
+    margin-bottom: 10px;
+}
+
+.header-section h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0 0 4px;
+}
+
+.header-section p {
+    color: #666;
+    font-size: 13px;
+    margin: 0;
+}
+
+.stats-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 16px 0 20px;
+    padding: 0;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 16px;
+    min-width: 130px;
+    border-radius: 2px;
+    box-shadow: var(--shadow);
+}
+
+.stat strong {
+    font-size: 20px;
+    color: var(--text-dark);
+    margin-left: 4px;
+}
+
+.stat p {
+    font-size: 13px;
+    color: #888;
+    margin: 0;
+}
+
+.milestone-labels {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 8px 0;
+    font-size: 14px;
+    color: #333;
+    padding: 0;
+}
+
+.milestone-labels span {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.milestone-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 14px 0;
+    position: relative;
+    padding: 0 8px;
+}
+
+.milestone-line::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 6%;
+    right: 6%;
+    height: 2px;
+    background: #f3b3b3;
+    z-index: 0;
+}
+
+.milestone-lock {
+    background: #f8d7da;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #a50505;
+    font-size: 17px;
+    z-index: 1;
+}
+
+.milestone-labels.touchpoints span {
+    color: #555;
+}
+
+.touchpoints-wrapper {
+    display: flex;
+    justify-content: space-between;
+}
+
+.touch-points-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+
+    .label-icon {
+            font-size: 16px;
+        }
+}
+
+.see-rate-btn {
+    font-weight: 600;
+    font-size: 15px;
+    text-transform: none;
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.bottom-note {
+    margin-top: 18px;
+    text-align: center;
+    color: #777;
+    font-size: 14px;
+}
+
+.incentive-content-wrapper {
+    padding-inline: 0 !important;
+}
+
+.milestone-section {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.milestone-labels {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 0;
+}
+
+.milestone-line {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 12px 0 4px;
+    padding: 0 1% 0 34.5%;
+}
+
+.milestone-line::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 28px;
+    right: 28px;
+    height: 2px;
+    background: #f5b2b2;
+    z-index: 0;
+}
+
+.milestone-lock {
+    background: #f8d7da;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #d62828;
+    font-size: 16px;
+    z-index: 10;
+}
+
+.milestone-labels.touchpoints {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.milestone-labels.touchpoints> :not(:first-child) {
+    margin-right: 10px;
+    font-weight: 400;
+}
+
+.milestone-labels.touchpoints span {
+    width: 52px;
+    text-align: end;
+    font-weight: 500;
+    color: #333;
+}

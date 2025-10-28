@@ -27,15 +27,15 @@ interface SidebarProps {
 
 const menuItems = [
     // { title: 'Home', icon: home, path: '/HomePage' },
-    { title: 'Earnings', icon: wallet, path: '/OrdersPage' },
-    { title: 'Incentives', icon: diamond, path: '/PersonalDetailsPage' },
+    { title: 'Earnings', icon: wallet, path: '/MyEarnings' },
+    { title: 'Incentives', icon: diamond, path: '/IncentiveDetailsPage' },
     { title: 'Help', icon: helpCircle, path: '/BankDetailsPage' },
     { title: 'Profile', icon: person, path: '/ProfilePage' },
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     return (
-        <IonMenu side="start" color='primary' contentId="main-content" swipeGesture={true} backdropDismiss={true}>
+        <IonMenu side="start" color='primary' contentId="main-content" swipeGesture={true}>
             <IonHeader>
                 <IonToolbar color="primary">
                     <IonTitle>Menu</IonTitle>

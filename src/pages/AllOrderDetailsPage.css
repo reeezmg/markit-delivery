@@ -5,7 +5,7 @@
     background: #ffffff;
     border-radius: 30px;
     padding: 8px 6px;
-    margin-top: 20px;
+    margin-top: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     overflow-x: auto;
 }
@@ -44,4 +44,26 @@
 
 .date-item.active .day-number {
     color: white;
+}
+
+.date-item.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+.order-card {
+    margin-bottom: 24px;
+}
+
+.order-card.completed {
+    border-left: 4px solid var(--ion-color-success);
+}
+
+.order-card.pending {
+    border-left: 4px solid var(--ion-color-warning);
+}
+
+.order-card.cancelled {
+    border-left: 4px solid var(--ion-color-danger);
 }

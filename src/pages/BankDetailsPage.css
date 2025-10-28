@@ -1,0 +1,47 @@
+:root {
+    --primary: #a50505;
+    --primary-light: #c70a0a;
+    --card-bg: #ffffff;
+    --text-dark: #222;
+}
+
+.bank-details-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #f8f8f8;
+    padding: 16px;
+}
+
+.bank-name-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bank-details-card {
+    width: 100%;
+    max-width: 95%;
+    border-radius: 20px;
+    background: var(--card-bg);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    padding: 6px 0;
+}
+
+.bank-title {
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    color: var(--primary);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.bank-info p {
+    font-size: 16px;
+    color: var(--text-dark);
+    line-height: 1.5;
+    margin-bottom: 10px;
+    padding: 0 10px;
+}

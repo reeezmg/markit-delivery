@@ -1,0 +1,265 @@
+/* ──────────────────────────────────────────────
+   📊 Earnings Page Styles (with Tabs + Bar Chart)
+────────────────────────────────────────────── */
+.section-divider {
+    width: 100%;
+    height: 1px;
+    background-color: rgba(0, 0, 0, 0.2);
+    margin: 8px 0;
+}
+
+/* Smaller tab labels */
+.tab-label-small {
+    font-size: 16px;
+    font-weight: 500;
+    color: #222;
+}
+
+/* Optional hover or active tweaks */
+ion-segment-button.ion-activated .tab-label-small {
+    font-weight: 600;
+    color: #a50505;
+}
+
+
+
+.earnings-page {
+    background-color: #f8f9fb;
+    min-height: 100vh;
+    font-family: "Inter", "Roboto", sans-serif;
+    color: #333;
+    padding-bottom: 50px;
+}
+
+/* Header */
+.earnings-header {
+    background-color: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.earnings-header-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #222;
+    margin: 0;
+}
+
+/* Tabs */
+.earnings-tabs {
+    margin: 12px 0 6px;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+/* Main Container */
+.earnings-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 18px;
+}
+
+/* Summary Section */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.earnings-card {
+    background-color: #fff;
+    border-radius: 14px;
+    padding: 14px 16px 12px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+    transition: box-shadow 0.3s ease;
+}
+
+.earnings-card:hover {
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.card-value {
+    font-size: 26px;
+    font-weight: 700;
+    margin-top: 6px;
+    color: #111;
+}
+
+.card-subtext {
+    font-size: 13px;
+    color: #888;
+    margin-top: 8px;
+}
+
+.payout-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Chart */
+.chart-section {
+    background-color: #ffffff;
+    padding-right: 40px;
+    padding-bottom: 10px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+
+}
+
+.chart-header {
+    display: flex;
+    padding: 4px 10px;
+    justify-content: space-between;
+    align-items: center;
+    /* margin-bottom: 12px; */
+}
+
+
+.chart-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #000000;
+    padding-top: 6px;
+    padding-left: 10px;
+    margin-bottom: 12px;
+}
+
+.chart-container {
+    width: 100%;
+    height: 190px;
+}
+
+/* Orders */
+.orders-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px;
+}
+
+.orders-header-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+}
+
+.orders-header-count {
+    font-size: 16px;
+    color: #777;
+}
+
+.orders-dropdown {
+    margin-bottom: 10px;
+}
+
+.day-selector {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background-color: #fafafa;
+    font-size: 0.95rem;
+}
+
+.orders-week-block {
+    margin-bottom: 16px;
+    background: #fafafa;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.week-label {
+    font-weight: bold;
+    color: #a50505;
+}
+
+.week-earnings {
+    font-size: 0.9rem;
+    color: #333;
+    margin-top: 4px;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 8px 10px 10px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border: 1px solid #eee;
+}
+
+.order-item:hover {
+    background: #f2f2f2;
+}
+
+.order-left .order-id {
+    font-weight: 500;
+    padding-bottom: 4px;
+    color: #222;
+}
+
+.order-left .order-date {
+    font-size: 12px;
+    color: #777;
+    padding-bottom: 4px;
+}
+
+.order-right .order-amount {
+    font-weight: bold;
+    padding-bottom: 4px;
+    display: flex;
+    justify-content: right;
+    color: #333;
+}
+
+.order-right .order-tip {
+    font-size: 14px;
+    display: flex;
+    justify-content: right;
+    padding-top: 4px;
+    color: #888;
+}
+
+.order-dist {
+    font-size: 12px;
+    display: flex;
+    justify-content: right;
+    color: #888;
+}
+
+.tab-label-small {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.8rem;
+    line-height: 1;
+}
+
+.tab-label-small .main-text {
+    font-weight: 500;
+    padding-bottom: 2px;
+}
+
+.tab-label-small .sub-text {
+    font-weight: 500;
+
+}
+
+/* Make sure text doesn't disappear on small screens */
+@media (max-width: 400px) {
+    .tab-label-small {
+        font-size: 0.75rem;
+    }
+
+    .tab-label-small .sub-text {
+        display: block;
+    }
+}

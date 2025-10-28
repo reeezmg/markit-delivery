@@ -17,13 +17,11 @@ import OrdersPage from './pages/OrdersPage';
 import ProfilePage from './pages/ProfilePage';
 import Login from './pages/Login';
 import BankDetailsPage from './pages/BankDetailsPage';
-import PersonalDetailsPage from './pages/PersonalDetailsPage';
 import ActiveOrderDetailsPage from './pages/ActiveOrderDetailsPage';
 import LastOrderDetailsPage from './pages/LastOrderDetailsPage';
 import AllOrderDetailsPage from './pages/AllOrderDetailsPage';
 import Sidebar from './components/SideBar';
 
-import './theme/variables.css';
 import './pages/Style.css';
 import '@ionic/react/css/core.css';
 import '@ionic/react/css/normalize.css';
@@ -32,6 +30,11 @@ import '@ionic/react/css/typography.css';
 import '@ionic/react/css/padding.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
+import './theme/variables.css';
+import EditBankDetailsPage from './pages/EditBankDetailsPage/EditBankDetailsPage';
+import EditPersonalDetailsPage from './pages/EditPersonalDetailsPage/EditPersonalDetailsPage';
+import IncentiveDetailsPage from './pages/IncentiveDetailsPage/IncentiveDetailsPage';
+import EarningsPage from './pages/EarningsPage/EarningsPage';
 
 setupIonicReact();
 
@@ -54,16 +57,19 @@ const AppContent: React.FC = () => {
 
       <IonTabs>
         <IonRouterOutlet id="main-content">
+          <Route path="/" render={() => <Redirect to={isLoggedIn ? "/HomePage" : "/login"} />} exact />
+          <Route path="/login" render={() => (!isLoggedIn ? <Login /> : <Redirect to="/HomePage" />)} exact />
           <Route path="/HomePage" render={() => (isLoggedIn ? <HomePage /> : <Redirect to="/login" />)} exact />
           <Route path="/OrdersPage" render={() => (isLoggedIn ? <OrdersPage /> : <Redirect to="/login" />)} exact />
           <Route path="/ProfilePage" render={() => (isLoggedIn ? <ProfilePage /> : <Redirect to="/login" />)} exact />
-          <Route path="/PersonalDetailsPage" render={() => (isLoggedIn ? <PersonalDetailsPage /> : <Redirect to="/login" />)} exact />
           <Route path="/BankDetailsPage" render={() => (isLoggedIn ? <BankDetailsPage /> : <Redirect to="/login" />)} exact />
-          <Route path="/login" render={() => (!isLoggedIn ? <Login /> : <Redirect to="/HomePage" />)} exact />
-          <Route path="/" render={() => <Redirect to={isLoggedIn ? "/HomePage" : "/login"} />} exact />
+          <Route path="/EditBankDetailsPage" render={() => (isLoggedIn ? <EditBankDetailsPage /> : <Redirect to="/login" />)} exact />
+          <Route path="/EditPersonalDetailsPage" render={() => (isLoggedIn ? <EditPersonalDetailsPage /> : <Redirect to="/login" />)} exact />
           <Route path="/ActiveOrderDetails" component={ActiveOrderDetailsPage} />
-          <Route path="/LastOrderDetails" component={LastOrderDetailsPage} />
+          <Route path="/LastOrderDetails/:orderId" component={LastOrderDetailsPage} />
           <Route path="/AllOrderDetails" component={AllOrderDetailsPage} />
+          <Route path="/IncentiveDetailsPage" component={IncentiveDetailsPage} />
+          <Route path="/MyEarnings" component={EarningsPage} />
         </IonRouterOutlet>
 
         {/* ✅ Conditional tab bar */}
