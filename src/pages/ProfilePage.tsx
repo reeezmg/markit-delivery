@@ -27,7 +27,7 @@ const ProfilePage: React.FC = () => {
     name: 'John Brito',
     phone: '(+91) 123 456 7890',
     email: 'johnbrito@email.com',
-    address: 's221B, Baker Street, Chennai - 123456',
+    address: '221B, Baker Street, Chennai - 123456',
     bloodGroup: 'O +ve',
     image: 'https://cdn-icons-png.flaticon.com/512/219/219983.png',
   };
@@ -40,7 +40,7 @@ const ProfilePage: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent fullscreen className="profile-content">
+      <div  className="profile-content">
         <IonCard className="profile-card">
           <IonCardContent>
             <IonAvatar className="profile-avatar">
@@ -54,7 +54,6 @@ const ProfilePage: React.FC = () => {
                 <IonIcon icon={waterOutline} slot="start" color="primary" />
                 <IonLabel>{user.bloodGroup}</IonLabel>
               </IonItem>
-
 
               <IonItem lines="none" className="info-item">
                 <IonIcon icon={callOutline} slot="start" color="primary" />
@@ -72,32 +71,21 @@ const ProfilePage: React.FC = () => {
               </IonItem>
             </div>
 
-
             <div className="profile-buttons">
-
-
               <IonButton
                 expand="block"
                 color="medium"
                 shape="round"
                 className="bank-button"
                 routerLink="/BankDetailsPage"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 600,
-                  letterSpacing: "0.3px"
-                }}
               >
                 Bank Details
                 <IonIcon
                   icon={arrowForward}
                   slot="end"
-                  style={{ marginLeft: "8px", fontSize: "18px" }}
+                  style={{ marginLeft: '8px', fontSize: '18px' }}
                 />
               </IonButton>
-
 
               <IonButton
                 expand="block"
@@ -108,12 +96,10 @@ const ProfilePage: React.FC = () => {
               >
                 Edit Personal Info
               </IonButton>
-
-
             </div>
           </IonCardContent>
         </IonCard>
-      </IonContent>
+      </div>
     </IonPage>
   );
 };

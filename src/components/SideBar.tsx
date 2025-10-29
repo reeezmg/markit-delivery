@@ -29,13 +29,14 @@ const menuItems = [
     // { title: 'Home', icon: home, path: '/HomePage' },
     { title: 'Earnings', icon: wallet, path: '/MyEarnings' },
     { title: 'Incentives', icon: diamond, path: '/IncentiveDetailsPage' },
-    { title: 'Help', icon: helpCircle, path: '/BankDetailsPage' },
+    { title: 'Support', icon: helpCircle, path: '/HelpSupportPage' },
     { title: 'Profile', icon: person, path: '/ProfilePage' },
+
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     return (
-        <IonMenu side="start" color='primary' contentId="main-content" swipeGesture={true}>
+        <IonMenu side="start" color='primary' contentId="main-content" swipeGesture={false}>
             <IonHeader>
                 <IonToolbar color="primary">
                     <IonTitle>Menu</IonTitle>
@@ -65,7 +66,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
                     detail={false}
                     style={{
                         borderTop: '1px solid rgba(255,255,255,0.2)',
-                        backgroundColor: '#f44336',
+                        backgroundColor: 'danger',
                         color: 'white',
                         fontWeight: 'bold',
                         justifyContent: 'center',

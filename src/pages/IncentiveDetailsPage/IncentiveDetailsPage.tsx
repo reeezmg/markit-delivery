@@ -33,7 +33,7 @@ const IncentiveDetailsPage: React.FC = () => {
                     <IonButtons slot="start">
                         <IonBackButton defaultHref="/HomePage" />
                     </IonButtons>
-                    <IonTitle>Incentive Details</IonTitle>
+                    <IonTitle className="incentive-details-header">Incentive Details</IonTitle>
                 </IonToolbar>
             </IonHeader>
             <IonContent className="ion-padding" style={{ background: "#f8f8f8" }}>

@@ -10,7 +10,7 @@
 
 /* Smaller tab labels */
 .tab-label-small {
-    font-size: 16px;
+    font-size: 10px;
     font-weight: 500;
     color: #222;
 }
@@ -55,7 +55,7 @@ ion-segment-button.ion-activated .tab-label-small {
 .earnings-container {
     max-width: 1000px;
     margin: 0 auto;
-    padding: 0 18px;
+    padding: 0 10px;
 }
 
 /* Summary Section */
@@ -86,14 +86,14 @@ ion-segment-button.ion-activated .tab-label-small {
 }
 
 .card-value {
-    font-size: 26px;
+    font-size: 22px;
     font-weight: 700;
     margin-top: 6px;
     color: #111;
 }
 
 .card-subtext {
-    font-size: 13px;
+    font-size: 12px;
     color: #888;
     margin-top: 8px;
 }
@@ -107,8 +107,8 @@ ion-segment-button.ion-activated .tab-label-small {
 /* Chart */
 .chart-section {
     background-color: #ffffff;
-    padding-right: 40px;
-    padding-bottom: 10px;
+    padding-right: 35px;
+    /* padding-bottom: 10px; */
     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
 
 }
@@ -201,30 +201,33 @@ ion-segment-button.ion-activated .tab-label-small {
 }
 
 .order-left .order-id {
+    font-size: 14px;
     font-weight: 500;
-    padding-bottom: 4px;
+    padding-bottom: 2px;
     color: #222;
 }
 
 .order-left .order-date {
     font-size: 12px;
     color: #777;
-    padding-bottom: 4px;
+    padding-bottom: 2px;
 }
 
 .order-right .order-amount {
+    font-size: 14px;
     font-weight: bold;
-    padding-bottom: 4px;
+    padding-bottom: 2px;
     display: flex;
     justify-content: right;
     color: #333;
 }
 
+
 .order-right .order-tip {
-    font-size: 14px;
+    font-size: 12px;
     display: flex;
     justify-content: right;
-    padding-top: 4px;
+    padding-top: 2px;
     color: #888;
 }
 
@@ -244,13 +247,14 @@ ion-segment-button.ion-activated .tab-label-small {
 }
 
 .tab-label-small .main-text {
+    font-size: 10px;
     font-weight: 500;
     padding-bottom: 2px;
 }
 
 .tab-label-small .sub-text {
     font-weight: 500;
-
+font-size: 10px;
 }
 
 /* Make sure text doesn't disappear on small screens */
@@ -262,4 +266,8 @@ ion-segment-button.ion-activated .tab-label-small {
     .tab-label-small .sub-text {
         display: block;
     }
+}
+
+.withdraw-button-text{
+    padding-left:  6px;
 }

@@ -1,0 +1,161 @@
+:root {
+    --primary: #a50505;
+    --primary-light: #c70a0a;
+    --card-bg: #ffffff;
+    --text-dark: #222;
+}
+
+/* ORDER ID BAR */
+.order-id-bar {
+    background-color: black;
+    color: white;
+    text-align: center;
+    padding: 8px;
+    font-weight: 500;
+}
+
+/* --- MAP SECTION --- */
+.map-wrapper {
+    position: relative;
+    height: 75vh;
+    /* adjustable height */
+    overflow: hidden;
+}
+
+.map-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.map-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    pointer-events: auto;
+    /* allows user to scroll and zoom map */
+}
+
+.pickup-marker {
+    position: absolute;
+    top: 30%;
+    left: 60%;
+    transform: translate(-50%, -50%);
+    background-color: #1fb655;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 500;
+    z-index: 10;
+}
+
+.eta-circle {
+    position: absolute;
+    bottom: 80px;
+    right: 20px;
+    background-color: white;
+    color: #007aff;
+    border-radius: 50%;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+    z-index: 10;
+}
+
+.eta-circle span {
+    font-size: 20px;
+}
+
+.go-to-pickup-btn {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #ffcc00;
+    color: black;
+    font-weight: 600;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 30px;
+    font-size: 16px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    z-index: 10;
+}
+
+/* --- FIXED PICKUP CARD --- */
+.pickup-info {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--card-bg);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    padding: 16px;
+    text-align: center;
+    box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+}
+
+.pickup-info h2 {
+    margin: 0 0 5px 0;
+    font-weight: 600;
+}
+
+.pickup-info p {
+    color: #555;
+    font-size: 14px;
+    margin-bottom: 16px;
+    line-height: 1.4;
+}
+
+/* --- SLIDER BUTTON --- */
+.slider-button {
+    position: relative;
+    background-color: var(--ion-color-success, #28a745);
+    border-radius: 30px;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    user-select: none;
+    touch-action: pan-x;
+}
+
+.slider-handle {
+    position: absolute;
+    top: 3px;
+    left: 0;
+    background-color: white;
+    color: var(--ion-color-success, #28a745);
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    transition: left 0.1s ease;
+    z-index: 2;
+}
+
+.slider-text {
+    z-index: 1;
+    font-weight: 600;
+    font-size: 16px;
+    color: white;
+    opacity: 0.9;
+    pointer-events: none;
+}
+
+.slider-text.sliding {
+    opacity: 0.4;
+}

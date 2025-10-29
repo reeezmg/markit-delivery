@@ -39,11 +39,9 @@ const OrdersPage: React.FC = () => {
 
     <IonPage id="orders-page">
       <IonHeader translucent className='my-orders-header'>
-        <IonToolbar>
-          <IonTitle style={{ textAlign: 'center', fontWeight: 'bold', letterSpacing: '0.5px', fontSize: '22px' }}>
-            My Orders
-          </IonTitle>
-        </IonToolbar>
+        <IonToolbar color="primary">
+                  <IonTitle className="profile-header">My Orders</IonTitle>
+                </IonToolbar>
       </IonHeader>
 
       <IonContent fullscreen className="orders-content">

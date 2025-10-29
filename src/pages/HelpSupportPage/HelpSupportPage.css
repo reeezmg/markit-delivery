@@ -1,0 +1,62 @@
+.help-content {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    background: #ffffff;
+    padding: 12px !important;
+    margin: 12px !important;
+}
+
+.help-container {
+    width: 100%;
+    max-width: 450px;
+    margin-top: 20px;
+}
+
+.help-description {
+    font-size: 14px;
+    color: #555;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.input-label {
+    font-size: 14px;
+    color: #333;
+    display: block;
+    margin-bottom: 6px;
+    margin-left: 4px;
+}
+
+.help-input,
+.help-textarea {
+    /* --background: #f8f8f8; */
+    --padding-start: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.help-textarea {
+    min-height: 130px;
+}
+
+.submit-btn {
+    --background: var(--primary);
+    font-weight: 600;
+    margin-top: 8px;
+    border-radius: 8px;
+}
+
+.contact-info {
+    text-align: center;
+    font-size: 13px;
+    margin-top: 12px;
+    color: #555;
+}
+
+.contact-info a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+}
