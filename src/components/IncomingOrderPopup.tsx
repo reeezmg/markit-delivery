@@ -14,6 +14,7 @@ interface OrderDetails {
   to: string;
   earnings: number;
   multi: boolean;
+  distance: number;
 }
 
 interface IncomingOrderPopupContextType {
@@ -22,8 +23,8 @@ interface IncomingOrderPopupContextType {
 }
 
 const IncomingOrderPopupContext = createContext<IncomingOrderPopupContextType>({
-  showPopup: () => {},
-  hidePopup: () => {},
+  showPopup: () => { },
+  hidePopup: () => { },
 });
 
 export const IncomingOrderPopupProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -37,7 +38,7 @@ export const IncomingOrderPopupProvider: React.FC<{ children: React.ReactNode }>
     setVisible(true);
     audio.loop = true;
     audio.volume = 1;
-    audio.play().catch(() => {});
+    audio.play().catch(() => { });
   };
 
   const hidePopup = () => {
@@ -79,25 +80,35 @@ export const IncomingOrderPopupProvider: React.FC<{ children: React.ReactNode }>
                 <div>
                   <div className="earnings-text">Earnings</div>
                   <div className="earnings-amount">₹{order.earnings.toFixed(2)}</div>
-                  <div className="multi-box">
-                    Multi Order: <b>{order.multi ? "Yes" : "No"}</b>
-                  </div>
+
+                  {order.multi && (
+                    <div className="multi-box">
+                      <b>Multi Order</b>
+                    </div>
+                  )}
                 </div>
               </div>
 
               <div className="address-section">
                 <div className="address-item">
-                  <IonIcon icon={locationOutline} className="location-icon" />
+
                   <div>
-                    <b>Pickup:</b>
+                    <b> <IonIcon icon={locationOutline} className="location-icon" /> Pickup:</b>
                     <p>{order.from}</p>
                   </div>
                 </div>
                 <div className="address-item">
-                  <IonIcon icon={locationOutline} className="location-icon" />
+
                   <div>
-                    <b>Drop:</b>
+                    <b> <IonIcon icon={locationOutline} className="location-icon" /> Drop:</b>
                     <p>{order.to}</p>
+                  </div>
+                </div>
+                <div className="address-item">
+
+                  <div>
+                    <b> <IonIcon icon={locationOutline} className="location-icon" /> Distance:</b>
+                    <p>{order.distance} {order.distance > 1 ? "Kms" : "Km"} </p>
                   </div>
                 </div>
               </div>

@@ -77,6 +77,7 @@ const HomePage: React.FC = () => {
   const openActiveOrder = () => history.push('/ActiveOrderDetails');
   const openEarningsPage = () => history.push('/MyEarnings');
   const openHelpSupportPage = () => history.push('/HelpSupportPage');
+  const openGoToPickupPage = () => history.push('/GoToPickup');
 
 
   return (
@@ -181,7 +182,7 @@ const HomePage: React.FC = () => {
                 </div>
               </div>
 
-              <IonButton expand="block" color="primary" className="start-btn" onClick={openActiveOrder}>
+              <IonButton expand="block" color="primary" className="start-btn" onClick={openGoToPickupPage}>
                 {/* View on Map */}
                 Order Details
               </IonButton>
@@ -234,15 +235,60 @@ const HomePage: React.FC = () => {
                 <IonButton
                   expand="block"
                   color="success"
-                  onClick={() =>
+                  onClick={() => {
+                    // 1️⃣ Random order type
+                    const types = ["Try & Buy", "Standard"];
+                    const randomType = types[Math.floor(Math.random() * types.length)];
+
+                    // 2️⃣ Random multi-order flag
+                    const isMulti = Math.random() < 0.5;
+
+                    // 3️⃣ Random pickup and drop locations
+                    const fromLocations = [
+                      "Trends Store, City Mall Bakers Treat, Lalbagh Bakers Treat, Lalbagh Bakers Treat, Lalbagh Bakers Treat, Lalbagh",
+                      "Domino's Pizza, Hampankatta Bakers Treat, Lalbagh Bakers Treat, Lalbagh Bakers Treat, Lalbagh Bakers Treat, Lalbagh",
+                      "Ira The Fresh Kitchen, Mangalore Bakers Treat, Lalbagh Bakers Treat, Lalbagh Bakers Treat, Lalbagh Bakers Treat, Lalbagh",
+                      "Reliance Smart, Kankanady Bakers Treat, Lalbagh Bakers Treat, Lalbagh Bakers Treat, Lalbagh Bakers Treat, Lalbagh  Bakers Treat, Lalbagh",
+                      "Bakers Treat, Lalbagh Bakers Treat, Lalbagh Bakers Treat, Lalbagh Bakers Treat, Lalbagh Bakers Treat, LalbaghBakers Treat, Lalbagh ",
+                    ];
+
+                    const toLocations = [
+                      "Flat 305, Indiranagar",
+                      "House No 22, Bejai",
+                      "Apartment 2B, Falnir",
+                      "Building 14, Kadri",
+                      "Villa 8, Urwa Market",
+                    ];
+
+                    const randomFrom =
+                      fromLocations[Math.floor(Math.random() * fromLocations.length)];
+                    const randomTo = toLocations[Math.floor(Math.random() * toLocations.length)];
+
+
+                    const distance = Math.floor(Math.random() * 7) + 1;
+
+
+                    let pay = 0;
+                    if (distance <= 4) {
+                      pay = 30;
+                    } else {
+                      pay = 30 + (distance - 4) * 8;
+                    }
+
+
+                    if (isMulti) pay += 10;
+
+
                     showPopup({
-                      type: "Try & Buy",
-                      from: "Trends Store, City Mall",
-                      to: "Flat 305, Indiranagar",
-                      earnings: 145,
-                      multi: false,
-                    })
-                  }
+                      type: randomType,
+                      from: randomFrom,
+                      to: randomTo,
+                      earnings: pay,
+                      multi: isMulti,
+                      distance: distance,
+                    });
+                  }}
+
                 >
                   Simulate Incoming Order
                 </IonButton>

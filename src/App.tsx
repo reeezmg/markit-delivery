@@ -38,7 +38,9 @@ import EarningsPage from "./pages/EarningsPage/EarningsPage";
 import { IncomingOrderPopupProvider } from "./components/IncomingOrderPopup";
 import HelpSupportPage from "./pages/HelpSupportPage/HelpSupportPage";
 import GoToPickupPage from "./pages/OrderWalkthrough/GoToPickupPage";
-import CollectOrderPage from "./pages/OrderWalkthrough/CollectOrder";
+import CollectOrderPage from "./pages/OrderWalkthrough/CollectOrderPage";
+import GoToDropPage from "./pages/OrderWalkthrough/GoToDropPage";
+import DeliveredPage from "./pages/OrderWalkthrough/DeliveredPage";
 
 
 setupIonicReact();
@@ -53,7 +55,7 @@ const AppContent: React.FC = () => {
     window.location.href = "/login";
   };
 
-  const showTabBar = ["/HomePage", "/CollectOrder", "/GoToPickup", "/MyEarnings", "/OrdersPage", "/ProfilePage"].includes(location.pathname);
+  const showTabBar = ["/HomePage", "/GoToPickup", "/CollectOrder", "/GoToDrop", "/Delivered", "/MyEarnings", "/OrdersPage", "/ProfilePage"].includes(location.pathname);
 
   return (
     <>
@@ -69,15 +71,16 @@ const AppContent: React.FC = () => {
           <Route path="/BankDetailsPage" render={() => (isLoggedIn ? <BankDetailsPage /> : <Redirect to="/login" />)} exact />
           <Route path="/EditBankDetailsPage" render={() => (isLoggedIn ? <EditBankDetailsPage /> : <Redirect to="/login" />)} exact />
           <Route path="/EditPersonalDetailsPage" render={() => (isLoggedIn ? <EditPersonalDetailsPage /> : <Redirect to="/login" />)} exact />
-          <Route path="/ActiveOrderDetails" component={ActiveOrderDetailsPage} />
-          <Route path="/LastOrderDetails/:orderId" component={LastOrderDetailsPage} />
-          <Route path="/AllOrderDetails" component={AllOrderDetailsPage} />
-          <Route path="/IncentiveDetailsPage" component={IncentiveDetailsPage} />
-          <Route path="/MyEarnings" component={EarningsPage} />
-          <Route path="/CollectOrder" component={CollectOrderPage} />
-          <Route path="/HelpSupportPage" component={HelpSupportPage} />
+          <Route path="/ActiveOrderDetails" component={ActiveOrderDetailsPage} exact />
+          <Route path="/LastOrderDetails/:orderId" component={LastOrderDetailsPage} exact />
+          <Route path="/AllOrderDetails" component={AllOrderDetailsPage} exact />
+          <Route path="/IncentiveDetailsPage" component={IncentiveDetailsPage} exact />
+          <Route path="/MyEarnings" component={EarningsPage} exact />
+          <Route path="/HelpSupportPage" component={HelpSupportPage} exact />
           <Route path="/GoToPickup" component={GoToPickupPage} exact />
-
+          <Route path="/CollectOrder" component={CollectOrderPage} exact />
+          <Route path="/GoToDrop" component={GoToDropPage} exact />
+          <Route path="/Delivered" component={DeliveredPage} exact />
 
         </IonRouterOutlet>
 

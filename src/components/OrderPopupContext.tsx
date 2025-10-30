@@ -9,6 +9,7 @@ interface OrderDetails {
   to: string;
   earnings: number;
   multi: boolean;
+  distance: number;
 }
 
 interface IncomingOrderPopupContextType {
@@ -61,7 +62,8 @@ export const IncomingOrderPopupProvider: React.FC<{ children: React.ReactNode }>
               <p><strong>From:</strong> {order.from}</p>
               <p><strong>To:</strong> {order.to}</p>
               <p><strong>Earnings:</strong> ₹{order.earnings}</p>
-              <p><strong>Multi Order:</strong> {order.multi ? "Yes" : "No"}</p>
+              <p>{order.multi ? <strong>Multi Order:</strong> : "No"}</p>
+              <p>{order.distance} {order.distance > 1 ? "Kms":"Km"} </p>
 
               <div className="popup-actions">
                 <IonButton color="success" expand="block" onClick={handleAccept}>

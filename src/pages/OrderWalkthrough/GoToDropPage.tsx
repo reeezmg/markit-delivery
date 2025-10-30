@@ -12,9 +12,9 @@ import {
 import { callOutline } from "ionicons/icons";
 import { useHistory } from "react-router-dom";
 import SlideToAction from "../../components/SlideToAction";
-import "./GoToPickupPage.css";
+import "./GoToDropPage.css";
 
-const GoToPickupPage: React.FC = () => {
+const GoToDropPage: React.FC = () => {
     const history = useHistory();
 
     return (
@@ -53,7 +53,7 @@ const GoToPickupPage: React.FC = () => {
                             <span>39</span>
                             <p>mins</p>
                         </div>
-                        <button className="go-to-pickup-btn">▲ Go to pickup</button>
+                        <button className="go-to-pickup-btn">▲ Go to Drop</button>
                     </div>
                 </div>
 
@@ -66,7 +66,7 @@ const GoToPickupPage: React.FC = () => {
                     <SlideToAction
                         text="Slide to Arrived"
                         color="var(--ion-color-success, #28a745)"
-                        onSlideComplete={() => history.push("/CollectOrder")}
+                        onSlideComplete={() => history.push("/Delivered")}
                     />
                 </div>
             </IonContent>
@@ -74,4 +74,4 @@ const GoToPickupPage: React.FC = () => {
     );
 };
 
-export default GoToPickupPage;
+export default GoToDropPage;

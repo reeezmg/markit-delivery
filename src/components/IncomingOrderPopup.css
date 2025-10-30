@@ -10,7 +10,7 @@
 
 .incoming-popup {
   background: #fff;
-  border-radius: 20px;
+  border-radius: 12px;
   padding: 16px;
   width: 100%;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
@@ -18,8 +18,15 @@
 }
 
 @keyframes popIn {
-  0% { transform: scale(0.8); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .popup-header {
@@ -34,8 +41,10 @@
   font-size: 16px;
   background: #ffd43b;
   padding: 6px 12px;
-  border-radius: 12px;
-  width: 100px;
+  display: flex;
+  justify-content: space-around;
+  border-radius: 10px;
+  width: 150px;
 }
 
 .close-icon {
@@ -50,9 +59,9 @@
 .earnings-section {
   display: flex;
   align-items: center;
-  background: #f8f9fa;
-  border-radius: 10px;
-  padding: 10px;
+
+
+  padding: 20px 0 10px;
   margin-bottom: 16px;
 }
 
@@ -95,16 +104,35 @@
   align-items: flex-start;
 }
 
-.location-icon {
-  color: #007bff;
-  font-size: 20px;
-  margin-top: 2px;
+
+
+.address-item {
+  display: flex;
+  align-items: center;
+  /* Ensures all icons are vertically centered */
+  gap: 8px;
 }
+
+.address-item .location-icon {
+  color: #002954;
+  font-size: 14px;
+  flex-shrink: 0;
+  /* prevents icon from shrinking */
+}
+
+.address-item div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 
 .address-item p {
   margin: 0;
   font-size: 14px;
   color: #333;
+  padding-block: 4px;
+  padding-left: 19px;
 }
 
 .popup-footer {
