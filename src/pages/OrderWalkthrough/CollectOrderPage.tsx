@@ -69,13 +69,9 @@ const CollectOrderPage: React.FC = () => {
       <IonHeader>
         <IonToolbar className="collect-toolbar">
           <IonButtons slot="start">
-            {/* ✅ Custom Back Button */}
-            <IonButton onClick={() => router.push("/HomePage", "root")}>
-              <IonIcon icon={arrowBack} slot="start" />
-              Back
-            </IonButton>
+            <IonMenuButton />
           </IonButtons>
-          <IonTitle>Collect Food</IonTitle>
+          <IonTitle>Collect Order</IonTitle>
         </IonToolbar>
       </IonHeader>
 

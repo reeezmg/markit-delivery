@@ -5,9 +5,11 @@
 }
 
 .collect-content {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 40px;
+  padding-bottom: 100px;
+  overflow-y: auto;
 }
 
 .icon-circle {
@@ -77,15 +79,18 @@
   border-radius: 4px;
 }
 
-.info-card, .delivery-info-card, .upload-card{
+.info-card,
+.delivery-info-card,
+.upload-card {
   background: #fff;
   margin: 10px;
   padding: 12px;
   border-radius: 10px;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
 }
-.upload-card{
-    margin-bottom: 40px;
+
+.upload-card {
+  margin-bottom: 40px;
 }
 
 .info-header {

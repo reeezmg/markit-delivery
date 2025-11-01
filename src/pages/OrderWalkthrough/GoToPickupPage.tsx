@@ -6,7 +6,13 @@ import {
     IonTitle,
     IonContent,
     useIonViewDidEnter,
+    IonMenuButton,
+    IonButtons,
+    IonIcon,
 } from "@ionic/react";
+import {
+    callOutline
+} from "ionicons/icons";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import axios from "axios";
@@ -128,8 +134,14 @@ const GoToPickupPage: React.FC = () => {
     return (
         <IonPage>
             <IonHeader>
-                <IonToolbar color="primary">
-                    <IonTitle>Go to Pickup</IonTitle>
+                <IonToolbar>
+                    <IonButtons slot="start">
+                        <IonMenuButton />
+                    </IonButtons>
+                    <IonTitle>Go to Pickup Location</IonTitle>
+                    <IonButtons slot="end">
+                        <IonIcon icon={callOutline} size="large" style={{ marginRight: "12px" }} />
+                    </IonButtons>
                 </IonToolbar>
             </IonHeader>
 
@@ -157,7 +169,7 @@ const GoToPickupPage: React.FC = () => {
                     <SlideToAction
                         text="Slide to Arrived"
                         color="var(--ion-color-success, #28a745)"
-                        onSlideComplete={() => history.push("/Delivered")}
+                        onSlideComplete={() => history.push("/CollectOrder")}
                     />
                 </div>
             </IonContent>

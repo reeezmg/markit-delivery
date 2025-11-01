@@ -42,7 +42,7 @@ const OrdersPage: React.FC = () => {
         <IonToolbar color="primary">
                   <IonTitle className="profile-header">My Orders</IonTitle>
                 </IonToolbar>
-      </IonHeader>
+      </IonHeader> 
 
       <IonContent fullscreen className="orders-content">
 
@@ -53,7 +53,7 @@ const OrdersPage: React.FC = () => {
             <IonCard button onClick={openActiveOrder} className="order-card active">
               <IonCardHeader>
                 <IonCardTitle className='order-card-title'>Order <span className='order-number-title'> #4529 </span></IonCardTitle>
-                <IonCardSubtitle className='subheader-from'>From : Centro</IonCardSubtitle>
+                <IonCardSubtitle className='subheader-from'>From :  Centro</IonCardSubtitle>
                 <IonCardSubtitle className='subheader-to'>To : Green Avenue</IonCardSubtitle>
               </IonCardHeader>
               <IonCardContent className='status-container'>
