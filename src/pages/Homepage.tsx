@@ -70,7 +70,7 @@ const HomePage: React.FC = () => {
     incentiveMessage = `You've earned ₹${incentiveAmount} incentive! Deliver ${10 - ordersCompletedToday} more orders to reach ₹300.`;
   } else {
     incentiveAmount = 300;
-    incentiveMessage = `Amazing! You’ve completed ${ordersCompletedToday} orders and earned a ₹${incentiveAmount} bonus!`;
+    incentiveMessage = `Amazing! You've completed ${ordersCompletedToday} orders and earned a ₹${incentiveAmount} bonus!`;
   }
 
   const openAllOrders = () => history.push('/AllOrderDetails');

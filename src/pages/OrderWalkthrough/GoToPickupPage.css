@@ -159,3 +159,62 @@
 .slider-text.sliding {
     opacity: 0.8;
 }
+
+.map-wrapper {
+    position: relative;
+    height: 60vh;
+    width: 100%;
+    overflow: hidden;
+}
+
+.map-container {
+    height: 100%;
+    width: 100%;
+    border-radius: 12px;
+}
+
+.pickup-marker,
+.eta-circle,
+.go-to-pickup-btn {
+    position: absolute;
+    z-index: 500;
+}
+
+.pickup-marker {
+    bottom: 20px;
+    left: 20px;
+    background: #fff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.eta-circle {
+    top: 20px;
+    right: 20px;
+    background: #007bff;
+    color: white;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.go-to-pickup-btn {
+    bottom: 20px;
+    right: 20px;
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+}
+
+.user-label {
+    pointer-events: none;
+    font-family: sans-serif;
+    text-align: center;
+}
