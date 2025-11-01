@@ -13,7 +13,7 @@ import {
 import { arrowForward, cameraOutline } from "ionicons/icons";
 import { useHistory } from "react-router-dom";
 import SlideToAction from "../../components/SlideToAction";
-import "./DelivererdPage.css"
+import "./DeliveredPage.css"
 
 // const [photo, setPhoto] = useState<string | null>(null);
 const items = [
@@ -57,7 +57,7 @@ const DeliveredPage: React.FC = () => {
                     <IonButtons slot="start">
                         <IonMenuButton />
                     </IonButtons>
-                    <IonTitle>Collect Food</IonTitle>
+                    <IonTitle>Complete Delivery</IonTitle>
 
                 </IonToolbar>
             </IonHeader>
@@ -166,12 +166,12 @@ const DeliveredPage: React.FC = () => {
             <div className="pickup-info">
                 <h2>Parika</h2>
                 <p>Near Vijayabank, Marnamikatte, Mangalore</p>
-
+ 
                 {/* ✅ Reusable slider component */}
                 <SlideToAction
                     text="Delivered"
                     color="var(--ion-color-success, #28a745)"
-                    onSlideComplete={() => history.push("/HomePage")}
+                    onSlideComplete={() => history.push("/DeliverySuccessPage")}
                 />
             </div>
         </IonPage>

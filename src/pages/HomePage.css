@@ -234,7 +234,7 @@
 }
 
 /* 🌟 Pulse animation effect */
-/* @keyframes pulse {
+@keyframes pulse {
   0% {
     transform: scale(0.9);
     box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
@@ -249,7 +249,7 @@
     transform: scale(0.9);
     box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
   }
-} */
+}
 
 .quick-access-container {
   display: flex;

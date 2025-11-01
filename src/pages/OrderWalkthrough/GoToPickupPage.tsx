@@ -24,7 +24,7 @@ const GoToPickupPage: React.FC = () => {
                     <IonButtons slot="start">
                         <IonMenuButton />
                     </IonButtons>
-                    <IonTitle>Go to Pickup Food</IonTitle>
+                    <IonTitle>Go to Pickup Location</IonTitle>
                     <IonButtons slot="end">
                         <IonIcon icon={callOutline} size="large" style={{ marginRight: "12px" }} />
                     </IonButtons>
@@ -42,7 +42,6 @@ const GoToPickupPage: React.FC = () => {
                             title="Pickup Map"
                             width="100%"
                             height="100%"
-                            frameBorder="0"
                             style={{ border: 0 }}
                             src="https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_API_KEY&q=Ira+The+Fresh+Kitchen,Mangalore"
                             allowFullScreen

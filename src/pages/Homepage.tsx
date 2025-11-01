@@ -74,6 +74,7 @@ const HomePage: React.FC = () => {
   }
 
   const openAllOrders = () => history.push('/AllOrderDetails');
+  const openTodaysOrders = () => history.push('/AllOrderDetails/?filter=today');
   const openActiveOrder = () => history.push('/ActiveOrderDetails');
   const openEarningsPage = () => history.push('/MyEarnings');
   const openHelpSupportPage = () => history.push('/HelpSupportPage');
@@ -206,9 +207,9 @@ const HomePage: React.FC = () => {
 
             {/* Row 2 */}
             <div className="quick-row">
-              <div className="quick-card-box quick-card-last-order" onClick={openAllOrders}>
+              <div className="quick-card-box quick-card-last-order" onClick={openTodaysOrders}>
                 <IonIcon icon={timeOutline} size="large" />
-                <p className="quick-card-text">Last Orders</p>
+                <p className="quick-card-text">Today's Orders</p>
               </div>
 
               <div className="quick-card-box quick-card-support" onClick={openHelpSupportPage}>

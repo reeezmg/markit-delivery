@@ -24,7 +24,7 @@ const GoToDropPage: React.FC = () => {
                     <IonButtons slot="start">
                         <IonMenuButton />
                     </IonButtons>
-                    <IonTitle>Go to Pickup Food</IonTitle>
+                    <IonTitle>Go to Drop Location</IonTitle>
                     <IonButtons slot="end">
                         <IonIcon icon={callOutline} size="large" style={{ marginRight: "12px" }} />
                     </IonButtons>

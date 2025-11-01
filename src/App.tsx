@@ -41,6 +41,7 @@ import GoToPickupPage from "./pages/OrderWalkthrough/GoToPickupPage";
 import CollectOrderPage from "./pages/OrderWalkthrough/CollectOrderPage";
 import GoToDropPage from "./pages/OrderWalkthrough/GoToDropPage";
 import DeliveredPage from "./pages/OrderWalkthrough/DeliveredPage";
+import DeliverySuccessPage from "./pages/OrderWalkthrough/DeliverySuccessPage";
 
 
 setupIonicReact();
@@ -81,6 +82,7 @@ const AppContent: React.FC = () => {
           <Route path="/CollectOrder" component={CollectOrderPage} exact />
           <Route path="/GoToDrop" component={GoToDropPage} exact />
           <Route path="/Delivered" component={DeliveredPage} exact />
+          <Route path="/DeliverySuccessPage" component={DeliverySuccessPage} exact />
 
         </IonRouterOutlet>
 

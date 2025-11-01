@@ -26,6 +26,7 @@ const AllOrderDetailsPage: React.FC = () => {
   const [weekDates, setWeekDates] = useState<Date[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const history = useHistory();
+  const isTodayFilter = new URLSearchParams(location.search).get("filter") === "today";
 
   // 🗓️ Helper to get 7 days of a week (Mon–Sun)
   const getWeekDates = (offset = 0): Date[] => {
@@ -77,13 +78,13 @@ const AllOrderDetailsPage: React.FC = () => {
           <IonButtons slot="start">
             <IonBackButton defaultHref="/OrdersPage" />
           </IonButtons>
-          <IonTitle>All Orders</IonTitle>
+          <IonTitle>{isTodayFilter ? "Today's Orders" : 'All Orders'}</IonTitle>
         </IonToolbar>
       </IonHeader>
 
       <IonContent fullscreen className="ion-padding">
         {/* 🔘 Week Selector */}
-        <IonSegment
+        {!isTodayFilter && <IonSegment
           value={selectedWeek}
           onIonChange={(e) => setSelectedWeek(e.detail.value as "current" | "last")}
         >
@@ -93,10 +94,10 @@ const AllOrderDetailsPage: React.FC = () => {
           <IonSegmentButton value="last">
             <IonLabel>Last Week</IonLabel>
           </IonSegmentButton>
-        </IonSegment>
+        </IonSegment>}
 
         {/* 🗓️ Dates Bar */}
-        <div className="dates-bar">
+        {!isTodayFilter && <div className="dates-bar">
           {weekDates.map((date) => {
             const isActive = selectedDate === date.toDateString();
             const dayName = date.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase();
@@ -117,7 +118,7 @@ const AllOrderDetailsPage: React.FC = () => {
               </div>
             );
           })}
-        </div>
+        </div>}
 
         {/* 📦 Orders List */}
         <section className="orders-section">
