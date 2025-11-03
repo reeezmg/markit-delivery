@@ -279,9 +279,9 @@ const EarningsPage: React.FC = () => {
             <div className="earnings-card">
               <div className="card-label">Available for Payout</div>
               <div className="card-value">₹ {totalEarnings.toFixed(2)}</div>
-              <div className="payout-actions">
+              {/* <div className="payout-actions">
                 <IonButton size="small" color="primary"><IonIcon icon={cashOutline} slot="start" /><p className="withdraw-button-text">Withdraw</p></IonButton>
-              </div>
+              </div> */}
             </div>
           </section>
 
