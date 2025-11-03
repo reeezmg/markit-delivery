@@ -79,6 +79,7 @@ const HomePage: React.FC = () => {
   const openEarningsPage = () => history.push('/MyEarnings');
   const openHelpSupportPage = () => history.push('/HelpSupportPage');
   const openGoToPickupPage = () => history.push('/GoToPickup');
+  const openWalletPage = () => history.push('/WalletPage');
 
 
   return (
@@ -199,7 +200,7 @@ const HomePage: React.FC = () => {
                 <p className="quick-card-text">Earnings</p>
               </div>
 
-              <div className="quick-card-box quick-card-wallet" onClick={openAllOrders}>
+              <div className="quick-card-box quick-card-wallet" onClick={openWalletPage}>
                 <IonIcon icon={walletOutline} size="large" />
                 <p className="quick-card-text">Wallet</p>
               </div>

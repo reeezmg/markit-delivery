@@ -1,0 +1,99 @@
+.wallet-content {
+    --background: #fff;
+}
+
+/* Summary Section */
+.summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-block: 18px;
+    padding-inline: 13px;
+}
+
+.summary-card {
+    text-align: center;
+    border-radius: 14px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease;
+    margin: 0 !important;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+}
+
+.summary-card ion-icon {
+    margin-bottom: 4px;
+}
+
+.summary-card h2 {
+    margin: 4px 0 4px;
+    color: var(--ion-color-primary);
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.summary-card p {
+    color: #666;
+    font-size: 14px;
+}
+
+/* Transactions */
+.transaction-section {
+    margin-top: 12px;
+    margin-inline: 13px;
+}
+
+.transaction-section h3 {
+    font-weight: 600;
+    color: #222;
+    margin: 0 0 8px 0px;
+    font-size: 1.15rem;
+}
+
+.custom-transaction-list {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    width: 100%;
+}
+
+.transaction-item {
+    --inner-padding-end: 16px;
+    --padding-start: 16px;
+    border-radius: 0;
+    --background: #fff;
+}
+
+.transaction-item h2 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+}
+
+.transaction-item p {
+    margin: 2px 0;
+    font-size: 13px;
+    color: #666;
+}
+
+/* Colored Amounts */
+.amount-credit {
+    font-weight: 700;
+    color: #28a745;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.amount-debit {
+    font-weight: 700;
+    color: #dc3545;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.amount-symbol {
+    margin-right: 2px;
+}

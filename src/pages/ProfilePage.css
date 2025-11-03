@@ -12,7 +12,7 @@
   align-items: flex-start;
   background: #f9f9f9;
   padding: 10px 10px; /* ⬅️ more top padding for spacing below header */
-  min-height: calc(100vh - 56px);  
+  min-height: calc(100vh - 56px); 
 }
 
 /* ===== Card ===== */
