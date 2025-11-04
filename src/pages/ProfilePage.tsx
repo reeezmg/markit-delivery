@@ -21,15 +21,19 @@ import {
   waterOutline,
 } from 'ionicons/icons';
 import './ProfilePage.css';
+import { bankDetails } from './BankDetailsPage';
 
 const ProfilePage: React.FC = () => {
   const user = {
+    id: 'ggzgzhzhshshshshsha',
     name: 'John Brito',
+    partnerId: 'MAR-1',
     phone: '(+91) 123 456 7890',
     email: 'johnbrito@email.com',
     address: '221B, Baker Street, Chennai - 123456',
     bloodGroup: 'O +ve',
-    image: 'https://cdn-icons-png.flaticon.com/512/219/219983.png',
+    profilePic: 'https://cdn-icons-png.flaticon.com/512/219/219983.png',
+    bankDetails: bankDetails
   };
 
   return (
@@ -40,11 +44,11 @@ const ProfilePage: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      <div  className="profile-content">
+      <div className="profile-content">
         <IonCard className="profile-card">
           <IonCardContent>
             <IonAvatar className="profile-avatar">
-              <img src={user.image} alt="Profile" />
+              <img src={user.profilePic} alt="Profile" />
             </IonAvatar>
 
             <h2 className="profile-name-header">{user.name}</h2>

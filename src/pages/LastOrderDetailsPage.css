@@ -63,4 +63,9 @@
         color: #000000;
         font-weight: 600;
     }
+
+    .total-delivery-charges-amt-label {
+        font-weight: 600;
+        color: #000000;
+    }
 }

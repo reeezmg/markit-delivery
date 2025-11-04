@@ -33,6 +33,16 @@ const LastOrderDetailsPage: React.FC = () => {
     { label: 'End Time', value: '1 PM' },
   ];
 
+  const paymentDetails = [
+    { label: 'Delivery Fee', value: '₹100' },
+    { label: 'Waiting Charges', value: '₹30' },
+    { label: 'Tip', value: '₹20' },
+  ];
+
+  const totalDeliveryCharges = {
+    value: '₹150',
+  }
+
   return (
     <IonPage>
       <IonHeader>
@@ -51,7 +61,7 @@ const LastOrderDetailsPage: React.FC = () => {
             <div className='card-amount-earned-wrapper'>
               <div className='card-amount-earned-inner-wrapper'>
 
-                <p className='amount-earned-bold'>₹200</p>
+                <p className='amount-earned-bold'>{totalDeliveryCharges.value}</p>
                 <IonLabel className='amount-earned-subtext'>Earned From This Order</IonLabel>
               </div>
             </div>
@@ -87,6 +97,21 @@ const LastOrderDetailsPage: React.FC = () => {
                     <IonCol className='order-value-col'>{item.qty}</IonCol>
                   </IonRow>
                 ))}
+              </IonGrid>
+              <IonCardHeader className='order-title-header-wrapper'>
+                <IonCardTitle className='order-summary-title'>Payment Details</IonCardTitle>
+              </IonCardHeader>
+              <IonGrid>
+                {paymentDetails.map((item, index) => (
+                  <IonRow key={index} className='order-details-summary-row'>
+                    <IonCol>{item.label}</IonCol>
+                    <IonCol className='order-value-col'>{item.value}</IonCol>
+                  </IonRow>
+                ))}
+                <IonRow className='order-details-summary-row'>
+                  <IonCol>Total Delivery Charges</IonCol>
+                  <IonCol className='total-delivery-charges-amt-label'>{totalDeliveryCharges.value}</IonCol>
+                </IonRow>
               </IonGrid>
               <div
                 className='total-collected-amount-wrapper'

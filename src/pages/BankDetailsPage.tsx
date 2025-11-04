@@ -15,13 +15,14 @@ import {
 import { create } from 'ionicons/icons';
 import './BankDetailsPage.css';
 
+export const bankDetails = {
+  bankName: 'HDFC Bank',
+  accountNumber: '123456789012',
+  ifscCode: 'HDFC0001234',
+  branch: 'Koramangala, Bengaluru',
+};
+
 const BankDetailsPage: React.FC = () => {
-  const bankDetails = {
-    bankName: 'HDFC Bank',
-    accountNumber: '123456789012',
-    ifscCode: 'HDFC0001234',
-    branch: 'Koramangala, Bengaluru',
-  };
 
   return (
     <IonPage>

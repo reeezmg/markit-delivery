@@ -22,6 +22,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import "./EarningsPage.css";
+import { useHistory } from "react-router";
 
 // -------------------- Generate Sample Orders --------------------
 const generateOrders = (offsetWeeks = 0) => {
@@ -100,6 +101,7 @@ const getWeekRange = (offsetWeeks = 0) => {
 
 // -------------------- Component --------------------
 const EarningsPage: React.FC = () => {
+  const history = useHistory();
   const [selectedTab, setSelectedTab] = useState<
     "today" | "week" | "lastWeek" | "month"
   >("today");
@@ -126,8 +128,8 @@ const EarningsPage: React.FC = () => {
       earnings:
         i === 3
           ? thisWeekData
-              .slice(0, todayIndex + 1)
-              .reduce((sum, d) => sum + d.earnings, 0)
+            .slice(0, todayIndex + 1)
+            .reduce((sum, d) => sum + d.earnings, 0)
           : +total.toFixed(2),
       range: `${range.from} - ${range.to}`,
     };
@@ -188,27 +190,31 @@ const EarningsPage: React.FC = () => {
     selectedTab === "today"
       ? `${todayOrders.length} Orders`
       : selectedTab === "week"
-      ? `${totalThisWeekOrders} Orders`
-      : selectedTab === "lastWeek"
-      ? `${totalLastWeekOrders} Orders`
-      : `${monthlyData.length} weeks`;
+        ? `${totalThisWeekOrders} Orders`
+        : selectedTab === "lastWeek"
+          ? `${totalLastWeekOrders} Orders`
+          : `${monthlyData.length} weeks`;
 
   const weekRangeText =
     selectedTab === "week"
       ? `${thisWeekRange.from} - ${thisWeekRange.to}`
       : selectedTab === "lastWeek"
-      ? `${lastWeekRange.from} - ${lastWeekRange.to}`
-      : "";
+        ? `${lastWeekRange.from} - ${lastWeekRange.to}`
+        : "";
 
   // -------------------- UI --------------------
   const totalEarnings =
     selectedTab === "today"
       ? todayEarnings
       : selectedTab === "week"
-      ? weekEarnings
-      : selectedTab === "lastWeek"
-      ? lastWeekEarnings
-      : monthEarnings;
+        ? weekEarnings
+        : selectedTab === "lastWeek"
+          ? lastWeekEarnings
+          : monthEarnings;
+
+  const openLastOrder = (orderId: string) => {
+    history.push(`/LastOrderDetails/${orderId}`);
+  };
 
   return (
     <IonPage className="earnings-page">
@@ -288,40 +294,40 @@ const EarningsPage: React.FC = () => {
           {(selectedTab === "week" ||
             selectedTab === "lastWeek" ||
             selectedTab === "month") && (
-            <section className="chart-section">
-              <div className="chart-header">
-                <div className="chart-title">
-                  {selectedTab === "week"
-                    ? "Earnings This Week"
-                    : selectedTab === "lastWeek"
-                    ? "Earnings Last Week"
-                    : "Earnings This Month"}
+              <section className="chart-section">
+                <div className="chart-header">
+                  <div className="chart-title">
+                    {selectedTab === "week"
+                      ? "Earnings This Week"
+                      : selectedTab === "lastWeek"
+                        ? "Earnings Last Week"
+                        : "Earnings This Month"}
+                  </div>
                 </div>
-              </div>
-              <div className="chart-container">
-                <ResponsiveContainer width="100%" height={150}>
-                  <BarChart
-                    data={
-                      selectedTab === "week"
-                        ? thisWeekData.slice(0, todayIndex + 1)
-                        : selectedTab === "lastWeek"
-                        ? lastWeekData
-                        : monthlyData
-                    }
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="name"
-                      tick={{ fontSize: 12 }} // ← Smaller weekday labels
-                    />
-                    <YAxis tick={{ fontSize: 12 }} /> {/* ← Smaller Y-axis numbers */}
-                    <Tooltip />
-                    <Bar dataKey="earnings" fill="#a50505" barSize={20} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </section>
-          )}
+                <div className="chart-container">
+                  <ResponsiveContainer width="100%" height={150}>
+                    <BarChart
+                      data={
+                        selectedTab === "week"
+                          ? thisWeekData.slice(0, todayIndex + 1)
+                          : selectedTab === "lastWeek"
+                            ? lastWeekData
+                            : monthlyData
+                      }
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="name"
+                        tick={{ fontSize: 12 }} // ← Smaller weekday labels
+                      />
+                      <YAxis tick={{ fontSize: 12 }} /> {/* ← Smaller Y-axis numbers */}
+                      <Tooltip />
+                      <Bar dataKey="earnings" fill="#a50505" barSize={20} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </section>
+            )}
 
           <div className="section-divider"></div>
 
@@ -351,24 +357,24 @@ const EarningsPage: React.FC = () => {
               {selectedTab === "month"
                 ? renderOrders()
                 : renderOrders().map((order: any) => (
-                    <div key={order.id} className="order-item">
-                      <div className="order-left">
-                        <div className="order-id">{order.id}</div>
-                        <div className="order-date">{order.date}</div>
+                  <div key={order.id} className="order-item" onClick={() => openLastOrder(order.id)}>
+                    <div className="order-left">
+                      <div className="order-id">{order.id}</div>
+                      <div className="order-date">{order.date}</div>
+                    </div>
+                    <div className="order-right">
+                      <div className="order-amount">
+                        ₹ {order.total.toFixed(2)}
                       </div>
-                      <div className="order-right">
-                        <div className="order-amount">
-                          ₹ {order.total.toFixed(2)}
-                        </div>
-                        <div className="order-dist">
-                          Distance: {order.dist} Kms
-                        </div>
-                        <div className="order-tip">
-                          Earnings: ₹ {order.earnings.toFixed(2)}
-                        </div>
+                      <div className="order-dist">
+                        Distance: {order.dist} Kms
+                      </div>
+                      <div className="order-tip">
+                        Earnings: ₹ {order.earnings.toFixed(2)}
                       </div>
                     </div>
-                  ))}
+                  </div>
+                ))}
             </div>
           </section>
         </div>
