@@ -29,20 +29,25 @@ const OrdersPage: React.FC = () => {
   const history = useHistory();
 
   const openActiveOrder = () => history.push('/ActiveOrderDetails');
-  const openLastOrder = (orderId: string) => history.push(`/LastOrderDetails/${orderId}`);
+  const openLastOrder = (orderId: string) => {
+    history.push({
+      pathname: `/LastOrderDetails/${orderId}?isLastOrder=true`,
+      state: { isLastOrder: true },
+    });
+  };
   const openAllOrders = () => history.push('/AllOrderDetails');
 
   const lastOrder: Order =
-    { id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d', orderNumber: '4523', from: "Centro", to: "Green Avenue", earned: 230, status: OrderStatus.Completed }
+    { id: '872c1a7d-e561-4592-a9dc-75e72bfd0d8d', orderNumber: '4523', from: "Centro", to: "Green Avenue", earned: 230, status: OrderStatus.Completed }
 
   return (
 
     <IonPage id="orders-page">
       <IonHeader translucent className='my-orders-header'>
         <IonToolbar color="primary">
-                  <IonTitle className="profile-header">My Orders</IonTitle>
-                </IonToolbar>
-      </IonHeader> 
+          <IonTitle className="profile-header">My Orders</IonTitle>
+        </IonToolbar>
+      </IonHeader>
 
       <IonContent fullscreen className="orders-content">
 

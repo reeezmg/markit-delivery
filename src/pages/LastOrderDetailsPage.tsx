@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   IonPage,
   IonHeader,
@@ -18,29 +18,66 @@ import {
   IonBadge
 } from '@ionic/react';
 import './LastOrderDetailsPage.css';
+import { useLocation, useParams } from 'react-router';
+import { api } from '../services/api';
+import { Order } from '../types/types';
+import { formattedOrders } from '../utils/helper';
 
 const LastOrderDetailsPage: React.FC = () => {
-  const items = [
-    { name: 'Veg Biryani', qty: 1, price: 180 },
-    { name: 'Cold Coffee', qty: 1, price: 120 },
-  ];
+  const [orderDetail, setOrderDetails] = React.useState<any>({});
+
+  const loc = useLocation<{ isLastOrder?: boolean }>();
+  const isLastOrder = loc.state?.isLastOrder || false;
+
+  const location = useLocation<{ order }>();
+  const order = location.state?.order;
+  const { orderId } = useParams<{ orderId: string }>();
+
+
+  const loadOrders = async () => {
+    try {
+      const data = await api.get<Order[]>(`/orders/${orderId}`);
+      const list = Array.isArray(data) ? data : [data];
+      const formattedList = formattedOrders(list);
+      setOrderDetails(formattedList[0] ?? list[0]);
+    } catch (error) {
+      console.error('Failed to load orders:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (isLastOrder) {
+      loadOrders();
+    } else {
+      setOrderDetails(order);
+    }
+  }, [isLastOrder, order]);
+
+  console.log(order, 'order-routed', isLastOrder);
+
+  const items = order?.cart_items?.map((d) => ({
+    name: `${d.variant.code} ${d.variant.name} ${d.item.size}`,
+    qty: d.quantity,
+    price: d.variant.sprice,
+  }));
+
 
   const orderDetails = [
-    { label: 'Customer Name', value: 'Irfan Paan' },
-    { label: 'From', value: 'Centro Nexus Fiza, 2nd Floor, Pandeshwar, Mangalore - 575 001' },
-    { label: 'To', value: 'Prime Homes, Mulihitlu, Bolar, Mangalore - 575 001' },
-    { label: 'Start Time:', value: '12 PM' },
-    { label: 'End Time', value: '1 PM' },
+    { label: 'Customer Name', value: orderDetail?.clientDetails?.name || '' },
+    { label: 'From', value: orderDetail?.from || '' },
+    { label: 'To', value: orderDetail?.to || '' },
+    { label: 'Start Time:', value: orderDetail?.pickup_time || '12 PM' },
+    { label: 'End Time', value: orderDetail?.delivery_time || '12:30 PM' },
   ];
 
   const paymentDetails = [
-    { label: 'Delivery Fee', value: '₹100' },
-    { label: 'Waiting Charges', value: '₹30' },
-    { label: 'Tip', value: '₹20' },
+    { label: 'Delivery Fee', value: orderDetail?.deliverFees || '₹100' },
+    { label: 'Waiting Charges', value: orderDetail?.waitingFees || '₹30' },
+    { label: 'Tip', value: orderDetail?.tip || '₹20' },
   ];
 
   const totalDeliveryCharges = {
-    value: '₹150',
+    value: orderDetail?.earned,
   }
 
   return (
@@ -50,7 +87,7 @@ const LastOrderDetailsPage: React.FC = () => {
           <IonButtons slot="start">
             <IonBackButton defaultHref="/OrdersPage" />
           </IonButtons>
-          <IonTitle>Last Order Details</IonTitle>
+          <IonTitle>{isLastOrder ? 'Last Order Details' : 'Order Details'}</IonTitle>
         </IonToolbar>
       </IonHeader>
 
@@ -91,7 +128,7 @@ const LastOrderDetailsPage: React.FC = () => {
                   <IonCol>Item</IonCol>
                   <IonCol>Qty</IonCol>
                 </IonRow>
-                {items.map((item, index) => (
+                {items?.map((item, index) => (
                   <IonRow key={index} className='order-details-summary-row'>
                     <IonCol>{item.name}</IonCol>
                     <IonCol className='order-value-col'>{item.qty}</IonCol>
