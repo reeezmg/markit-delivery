@@ -43,6 +43,11 @@ ion-app {
   background-color: var(--ion-color-light);
 }
 
+ion-content {
+  --padding-top: env(safe-area-inset-top);
+  --padding-bottom: env(safe-area-inset-bottom);
+}
+
 /* Optional: consistent scrollbar behavior */
 ion-content::part(scroll) {
   -ms-overflow-style: none;

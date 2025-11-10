@@ -43,13 +43,17 @@ import GoToDropPage from "./pages/OrderWalkthrough/GoToDropPage";
 import DeliveredPage from "./pages/OrderWalkthrough/DeliveredPage";
 import DeliverySuccessPage from "./pages/OrderWalkthrough/DeliverySuccessPage";
 import WalletPage from "./pages/WalletPage/WalletPage";
+import { StatusBar, Style } from '@capacitor/status-bar';
+
+StatusBar.setStyle({ style: Style.Dark }); // or Style.Light
+StatusBar.setBackgroundColor({ color: '#ffffff' });
 
 
 setupIonicReact();
 
 const AppContent: React.FC = () => {
-  // const isLoggedIn = !!localStorage.getItem("CapacitorStorage.token");
-  const isLoggedIn = true;
+  const isLoggedIn = !!localStorage.getItem("CapacitorStorage.token");
+  // const isLoggedIn = true;
   const location = useLocation();
 
   const handleLogout = () => {
@@ -75,6 +79,7 @@ const AppContent: React.FC = () => {
           <Route path="/EditPersonalDetailsPage" render={() => (isLoggedIn ? <EditPersonalDetailsPage /> : <Redirect to="/login" />)} exact />
           <Route path="/ActiveOrderDetails" component={ActiveOrderDetailsPage} exact />
           <Route path="/LastOrderDetails/:orderId" component={LastOrderDetailsPage} exact />
+          <Route path="/OrderDetails/:orderId" component={LastOrderDetailsPage} exact />
           <Route path="/AllOrderDetails" component={AllOrderDetailsPage} exact />
           <Route path="/IncentiveDetailsPage" component={IncentiveDetailsPage} exact />
           <Route path="/MyEarnings" component={EarningsPage} exact />

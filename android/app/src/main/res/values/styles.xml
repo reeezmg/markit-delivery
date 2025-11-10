@@ -16,7 +16,14 @@
     </style>
 
 
-    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+<!--    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">-->
+<!--        <item name="android:background">@drawable/splash</item>-->
+<!--    </style>-->
+
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:background">@drawable/splash</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
     </style>
+
 </resources>
