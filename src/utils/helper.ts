@@ -2,15 +2,43 @@ export const formatAddress = (...fields) =>
     fields.filter(Boolean).join(", ");
 
 export const formattedOrders = (orders) => orders.map((order) => {
-    
-    const from = formatAddress(
-        order.delivery_from?.storeUniqueName,
-        order.delivery_from?.street,
-        order.delivery_from?.locality,
-        order.delivery_from?.landmark,
-        order.delivery_from?.formattedAddress,
-        order.delivery_from?.pincode
+
+    const stores = order.delivery_from || [];
+
+
+    // Format each store name and address using your existing formatAddress function
+    const formattedStores = stores?.map((store) =>
+        formatAddress(
+            store.storeUniqueName,
+            store.street,
+            store.locality,
+            store.landmark,
+            store.formattedAddress,
+            store.pincode
+        )
     );
+
+    const multipleStores = stores.map((store) => ({
+        name: store.storeUniqueName || store.name,
+        address: formatAddress(
+            store.street,
+            store.locality,
+            store.landmark,
+            store.formattedAddress,
+            store.pincode
+        ),
+    }));
+
+    const from = (() => {
+        if (stores.length === 0) return "";
+
+        const storeList = formattedStores.join(" & ");
+        const storeName = stores.length > 1 ? `${stores.length} Pick-up Stores - ${storeList}` : formattedStores[0];
+
+        // If multiple pickup stores
+        return `${storeName}`;
+    })();
+
 
     const to = formatAddress(
         order.delivery_to?.houseDetails,
@@ -21,6 +49,13 @@ export const formattedOrders = (orders) => orders.map((order) => {
         order.delivery_to?.pincode
     );
 
+    const fromStoreList =
+        formattedStores.length > 1
+            ? formattedStores
+                .map((store, idx) => `Store${idx + 1}: ${store}`)
+                .join("\n")
+            : formattedStores[0]?.address || "";
+
     // Example: Earned = subtotal - discount + shipping
     const earned = order.subtotal - (order.total_discount || 0) + (order.shipping || 0);
 
@@ -28,6 +63,8 @@ export const formattedOrders = (orders) => orders.map((order) => {
         id: order.id,
         orderNumber: String(order.order_number),
         clientDetails: order.client_details,
+        formattedStores: multipleStores || [],
+        fromStoreList: fromStoreList,
         from,
         to,
         earned,
@@ -35,3 +72,24 @@ export const formattedOrders = (orders) => orders.map((order) => {
         ...order
     };
 });
+
+export const mapPartnerToUser = (partnerData) => {
+    const bankDetails = {
+        bankName: partnerData.bankName,
+        accountNumber: partnerData.accountNo,
+        ifscCode: partnerData.ifsc,
+        branch: partnerData.branch,
+    };
+
+    return {
+        id: partnerData.id,
+        name: partnerData.name,
+        partnerId: `MAR-${partnerData.partnerId}`,
+        phone: partnerData.phone,
+        email: partnerData.email,
+        address: partnerData?.address?.formattedAddress ? partnerData?.address?.formattedAddress : "Not Available",
+        bloodGroup: partnerData.bloodGroup || "N/A",
+        profilePic: partnerData.profilePic || "https://example.com/images/johndoe.jpg",
+        bankDetails,
+    };
+};

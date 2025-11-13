@@ -33,22 +33,8 @@ const LastOrderDetailsPage: React.FC = () => {
   const order = location.state?.order;
   const { orderId } = useParams<{ orderId: string }>();
 
-
-  const loadOrders = async () => {
-    try {
-      const data = await api.get<Order[]>(`/orders/${orderId}`);
-      const list = Array.isArray(data) ? data : [data];
-      const formattedList = formattedOrders(list);
-      setOrderDetails(formattedList[0] ?? list[0]);
-    } catch (error) {
-      console.error('Failed to load orders:', error);
-    }
-  };
-
   useEffect(() => {
-    if (isLastOrder) {
-      loadOrders();
-    } else {
+    if (order) {
       setOrderDetails(order);
     }
   }, [isLastOrder, order]);
@@ -80,6 +66,8 @@ const LastOrderDetailsPage: React.FC = () => {
     value: orderDetail?.earned,
   }
 
+  console.log(orderDetail?.fromStoreList, 'orderDetail?.fromStoreList');
+
   return (
     <IonPage>
       <IonHeader>
@@ -104,7 +92,7 @@ const LastOrderDetailsPage: React.FC = () => {
             </div>
             <IonCardContent>
               <IonCardHeader className='order-title-header-wrapper'>
-                <IonCardTitle className='current-order-title'>Order #4512</IonCardTitle>
+                <IonCardTitle className='current-order-title'>Order #{order?.orderNumber}</IonCardTitle>
               </IonCardHeader>
 
 
@@ -113,7 +101,24 @@ const LastOrderDetailsPage: React.FC = () => {
                   {orderDetails.map((item, index) => (
                     <IonRow key={index} className='order-details-summary-row'>
                       <IonCol className='order-label-col'>{item.label}</IonCol>
-                      <IonCol className='order-value-col'>{item.value}</IonCol>
+                      {item?.label === "From" && orderDetail?.formattedStores?.length > 1 ? (
+                        <IonCol className="order-value-col">
+                          <div className="vertical-stepper">
+                            {orderDetail.formattedStores.map((store, idx) => (
+                              <div key={idx} className="step">
+                                <div className="circle">{idx + 1}</div>
+                                <div className="content">
+                                  <div className="store-name">{store.name}</div>
+                                  <div className="store-address">{store.address}</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </IonCol>
+                      ) : (
+                        <IonCol className="order-value-col">{item.value}</IonCol>
+                      )}
+
                     </IonRow>
                   ))}
                 </IonGrid>

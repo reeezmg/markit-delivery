@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   IonPage,
   IonHeader,
@@ -14,15 +14,34 @@ import {
 } from '@ionic/react';
 import { create } from 'ionicons/icons';
 import './BankDetailsPage.css';
-
-export const bankDetails = {
-  bankName: 'HDFC Bank',
-  accountNumber: '123456789012',
-  ifscCode: 'HDFC0001234',
-  branch: 'Koramangala, Bengaluru',
-};
+import { useHistory } from 'react-router';
+import store from '../utils/storage';
 
 const BankDetailsPage: React.FC = () => {
+  const history = useHistory();
+
+  const [user, setUser] = useState<any>({});
+
+  // store.remove("profile");
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      const storedProfile = await store.get("profile");
+      if (storedProfile) {
+        setUser(storedProfile);
+      }
+    };
+    loadProfile();
+  }, []);
+
+  const { bankName, accountNumber, ifscCode, branch } = user?.bankDetails || {};
+
+
+  const goToBankDetails = () => {
+    history.push({
+      pathname: '/EditBankDetailsPage',
+    });
+  };
 
   return (
     <IonPage>
@@ -41,12 +60,12 @@ const BankDetailsPage: React.FC = () => {
           <IonCardContent>
 
             <div className='bank-name-wrapper'>
-              <h2 className="bank-title">{bankDetails.bankName}</h2>
+              <h2 className="bank-title">{bankName}</h2>
               <IonButton
                 fill="clear"
                 color="primary"
                 slot="end"
-                routerLink="/EditBankDetailsPage"
+                onClick={goToBankDetails}
                 style={{ display: 'flex', alignItems: 'center', fontWeight: 600 }}
               >
                 <span style={{ marginRight: '6px' }}>Edit</span>
@@ -56,13 +75,13 @@ const BankDetailsPage: React.FC = () => {
 
             <div className="bank-info">
               <p>
-                <strong>Account Number:</strong> {bankDetails.accountNumber}
+                <strong>Account Number:</strong> {accountNumber}
               </p>
               <p>
-                <strong>IFSC Code:</strong> {bankDetails.ifscCode}
+                <strong>IFSC Code:</strong> {ifscCode}
               </p>
               <p>
-                <strong>Branch:</strong> {bankDetails.branch}
+                <strong>Branch:</strong> {branch}
               </p>
             </div>
           </IonCardContent>

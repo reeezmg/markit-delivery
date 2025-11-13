@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   IonContent,
   IonHeader,
@@ -21,19 +21,32 @@ import {
   waterOutline,
 } from 'ionicons/icons';
 import './ProfilePage.css';
-import { bankDetails } from './BankDetailsPage';
+import store from '../utils/storage';
+import { useHistory } from 'react-router';
 
 const ProfilePage: React.FC = () => {
-  const user = {
-    id: 'ggzgzhzhshshshshsha',
-    name: 'John Brito',
-    partnerId: 'MAR-1',
-    phone: '(+91) 123 456 7890',
-    email: 'johnbrito@email.com',
-    address: '221B, Baker Street, Chennai - 123456',
-    bloodGroup: 'O +ve',
-    profilePic: 'https://cdn-icons-png.flaticon.com/512/219/219983.png',
-    bankDetails: bankDetails
+  const history = useHistory();
+
+  const [user, setUser] = useState<any>({});
+
+  // store.remove("profile");
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      const storedProfile = await store.get("profile");
+      if (storedProfile) {
+        setUser(storedProfile);
+      }
+    };
+    loadProfile();
+  }, []);
+
+  console.log(user, 'user-profile');
+
+  const goToBankDetails = () => {
+    history.push({
+      pathname: '/BankDetailsPage',
+    });
   };
 
   return (
@@ -48,10 +61,10 @@ const ProfilePage: React.FC = () => {
         <IonCard className="profile-card">
           <IonCardContent>
             <IonAvatar className="profile-avatar">
-              <img src={user.profilePic} alt="Profile" />
+              <img src={user?.profilePic} alt="Profile" />
             </IonAvatar>
 
-            <h2 className="profile-name-header">{user.name}</h2>
+            <h2 className="profile-name-header">{user?.name}</h2>
 
             <div className="profile-info">
               <IonItem lines="none" className="info-item">
@@ -81,7 +94,7 @@ const ProfilePage: React.FC = () => {
                 color="medium"
                 shape="round"
                 className="bank-button"
-                routerLink="/BankDetailsPage"
+                onClick={goToBankDetails}
               >
                 Bank Details
                 <IonIcon

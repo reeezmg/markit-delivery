@@ -67,3 +67,26 @@
 .order-card.cancelled {
     border-left: 4px solid var(--ion-color-danger);
 }
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 3rem;
+    color: #666;
+}
+
+.loading-container p {
+    margin-top: 0.5rem;
+    font-size: 1rem;
+}
+
+.no-orders-card {
+    text-align: center;
+    padding: 1rem;
+}
+
+.no-orders-title {
+    color: #888;
+    font-size: 1rem;
+}
