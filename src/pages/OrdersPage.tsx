@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   IonPage,
   IonHeader,
@@ -24,24 +24,42 @@ import './OrdersPage.css';
 
 import { useHistory } from 'react-router-dom';
 import { Order, OrderStatus } from '../types/types';
+import { api } from '../services/api';
+import { formattedOrders } from '../utils/helper';
+import { truncate } from '../utils/stringUtils';
 
 const OrdersPage: React.FC = () => {
+  const [lastOrder, setLastOrder] = React.useState<any>({});
   const history = useHistory();
 
   const openActiveOrder = () => history.push('/ActiveOrderDetails');
   const openLastOrder = (orderId: string) => {
     history.push({
       pathname: `/LastOrderDetails/${orderId}?isLastOrder=true`,
-      state: { isLastOrder: true },
+      state: { isLastOrder: true, order: lastOrder },
     });
   };
   const openAllOrders = () => history.push('/AllOrderDetails');
 
-  const lastOrder: Order =
-    { id: '872c1a7d-e561-4592-a9dc-75e72bfd0d8d', orderNumber: '4523', from: "Centro", to: "Green Avenue", earned: 230, status: OrderStatus.Completed }
+  useEffect(() => {
+    const loadLastOrder = async () => {
+      try {
+        const data = await api.get<Order[]>(`/orders/last-order`);
+        console.log('data :>> ', data);
+        const formattedData = formattedOrders([data]);
+        setLastOrder(formattedData[0]);
+      } catch (error) {
+        console.error('Failed to load orders:', error);
+      }
+    };
+
+    loadLastOrder();
+  }, []);
+
+  console.log(lastOrder, 'llll');
+
 
   return (
-
     <IonPage id="orders-page">
       <IonHeader translucent className='my-orders-header'>
         <IonToolbar color="primary">
@@ -78,14 +96,18 @@ const OrdersPage: React.FC = () => {
             <h2>Last Order</h2>
             <IonCard button onClick={() => openLastOrder(lastOrder.id)} className="order-card completed">
               <IonCardHeader>
-                <IonCardTitle className='order-card-title'>Order <span className='order-number-title'> #4523 </span></IonCardTitle>
+                <IonCardTitle className='order-card-title'>Order <span className='order-number-title'> #{lastOrder?.orderNumber} </span></IonCardTitle>
                 <div className='order-details-wrapper'>
                   <div>
-                    <IonCardSubtitle className='subheader-from'>From : Centro</IonCardSubtitle>
-                    <IonCardSubtitle className='subheader-to'>To : Green Avenue</IonCardSubtitle>
+                    <IonCardSubtitle className='subheader-from'>From : <strong>
+                      {truncate(lastOrder.from, 20)}
+                    </strong></IonCardSubtitle>
+                    <IonCardSubtitle className='subheader-to'>To : <strong>
+                      {truncate(lastOrder.to, 20)}
+                    </strong></IonCardSubtitle>
                   </div>
                   <div className="order-row">
-                    <IonBadge color="success" className='order-status-badge'>₹230 Earned</IonBadge>
+                    <IonBadge color="success" className='order-status-badge'>₹{lastOrder.earned} Earned</IonBadge>
                   </div>
                 </div>
 

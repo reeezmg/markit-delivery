@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   IonContent,
   IonHeader,
@@ -27,6 +27,9 @@ import {
 import "./HomePage.css";
 import { useIncomingOrderPopup } from "../components/IncomingOrderPopup";
 import { useHistory } from 'react-router';
+import { api } from "../services/api";
+import store from "../utils/storage";
+import { mapPartnerToUser } from "../utils/helper";
 
 
 
@@ -37,6 +40,32 @@ const HomePage: React.FC = () => {
   const toggleLiveStatus = () => setIsOnline(!isOnline);
   const history = useHistory();
   const { showPopup } = useIncomingOrderPopup();
+
+  const fetchProfile = async () => {
+    try {
+      const data = await api.get(`/deliveryPartners`);
+      if (data) {
+        await store.set("profile", mapPartnerToUser(data));
+      } else {
+        await store.remove("profile");
+      }
+    } catch (error) {
+      console.error("Failed to load profile:", error);
+    }
+  };
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      const storedProfile = await store.get("profile");
+
+      // ✅ Call API only if profile is empty, null, or undefined
+      if (!storedProfile || Object.keys(storedProfile).length === 0) {
+        await fetchProfile();
+      }
+    };
+
+    loadProfile();
+  }, []);
 
   // useEffect(() => {
   //   const unsubscribe = onMessage(messaging, (payload) => {
