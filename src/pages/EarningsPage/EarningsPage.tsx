@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import {
   IonPage,
   IonHeader,
@@ -11,80 +11,29 @@ import {
   IonSegmentButton,
   IonLabel,
 } from "@ionic/react";
-import { cashOutline } from "ionicons/icons";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  ResponsiveContainer,
-} from "recharts";
 import "./EarningsPage.css";
 import { useHistory } from "react-router";
+import { api } from "../../services/api";
+import { formatDate } from "../../utils/helper";
 
-// -------------------- Generate Sample Orders --------------------
-const generateOrders = (offsetWeeks = 0) => {
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const allOrders: Record<string, any[]> = {};
-  let id = 1;
+// -------------------- API --------------------
+export const earningsApi = {
+  getTodayDetails() {
+    return api.get("/partner/earnings/day/details");
+  },
 
-  const today = new Date();
-  const baseDate = new Date(today);
-  // Set baseDate to the Monday of the current or past week
-  const dayOffset = (baseDate.getDay() + 6) % 7;
-  baseDate.setDate(today.getDate() - dayOffset - offsetWeeks * 7);
+  getWeekDetails() {
+    return api.get("/partner/earnings/week/details");
+  },
 
-  days.forEach((_, i) => {
-    const date = new Date(baseDate);
-    date.setDate(baseDate.getDate() + i);
-    const formattedDate = date.toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
+  getLastWeekDetails() {
+    return api.get("/partner/earnings/last-week/details");
+  },
 
-    allOrders[days[i]] = Array.from({ length: 5 }, () => {
-      const dist = +(Math.random() * 6 + 1).toFixed(1); // 1–7 km
-      const earnings = Math.max(
-        30,
-        Math.min(dist, 4) * 7 + Math.max(dist - 4, 0) * 8
-      ).toFixed(2);
-
-      return {
-        id: `MK-${String(id++).padStart(5, "0")}`,
-        dist,
-        date: formattedDate,
-        total: Math.floor(Math.random() * 300) + 250,
-        earnings: +earnings,
-      };
-    });
-  });
-
-  return allOrders;
+  getMonthDetails() {
+    return api.get("/partner/earnings/month/details");
+  }
 };
-
-// Generate this week and past 3 weeks
-const thisWeekOrders: any = generateOrders(0);
-const lastWeekOrders: any = generateOrders(1);
-const week3Orders: any = generateOrders(2);
-const week4Orders: any = generateOrders(3);
-
-// -------------------- Utilities --------------------
-interface Order {
-  id: string;
-  dist: number;
-  date: string;
-  total: number;
-  earnings: number;
-}
-
-const getWeeklyData = (orders: Record<string, Order[]>) =>
-  Object.entries(orders).map(([day, ord]) => ({
-    name: day,
-    earnings: ord.reduce((sum, o) => sum + o.earnings, 0),
-  }));
 
 const getWeekRange = (offsetWeeks = 0) => {
   const today = new Date();
@@ -106,95 +55,11 @@ const EarningsPage: React.FC = () => {
     "today" | "week" | "lastWeek" | "month"
   >("today");
   const [selectedDay, setSelectedDay] = useState("Mon");
+  const [loading, setLoading] = useState(false);
+  const [earnings, setEarnings] = useState({} as any);
 
-  const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const currentDate = new Date();
-  const todayName = dayNames[(currentDate.getDay() + 6) % 7];
-  const todayIndex = dayNames.indexOf(todayName);
-
-  const thisWeekData = getWeeklyData(thisWeekOrders);
-  const lastWeekData = getWeeklyData(lastWeekOrders);
   const thisWeekRange = getWeekRange(0);
   const lastWeekRange = getWeekRange(1);
-
-  // -------------------- Monthly (Last 4 Weeks, Week 4 = This Week) --------------------
-  const monthlyWeeks = [week4Orders, week3Orders, lastWeekOrders, thisWeekOrders];
-  const monthlyData = monthlyWeeks.map((weekOrders, i) => {
-    const weekData = getWeeklyData(weekOrders);
-    const total = weekData.reduce((sum, d) => sum + d.earnings, 0);
-    const range = getWeekRange(3 - i);
-    return {
-      name: `Week ${i + 1}`,
-      earnings:
-        i === 3
-          ? thisWeekData
-            .slice(0, todayIndex + 1)
-            .reduce((sum, d) => sum + d.earnings, 0)
-          : +total.toFixed(2),
-      range: `${range.from} - ${range.to}`,
-    };
-  });
-
-  // -------------------- Earnings --------------------
-  const todayOrders = thisWeekOrders[todayName] || [];
-
-  const { todayEarnings, weekEarnings, lastWeekEarnings, monthEarnings } =
-    useMemo(() => {
-      const todayEarnings =
-        thisWeekData.find((d) => d.name === todayName)?.earnings || 0;
-      const weekEarnings = thisWeekData
-        .slice(0, todayIndex + 1)
-        .reduce((sum, d) => sum + d.earnings, 0);
-      const lastWeekEarnings = lastWeekData.reduce(
-        (sum, d) => sum + d.earnings,
-        0
-      );
-      const monthEarnings = monthlyData.reduce(
-        (sum, w) => sum + w.earnings,
-        0
-      );
-      return { todayEarnings, weekEarnings, lastWeekEarnings, monthEarnings };
-    }, [todayName, todayIndex, monthlyData]);
-
-  // -------------------- Order Rendering --------------------
-  const renderOrders = () => {
-    if (selectedTab === "today") return todayOrders;
-    if (selectedTab === "week") {
-      const idx = dayNames.indexOf(selectedDay);
-      if (idx > todayIndex) return [];
-      return thisWeekOrders[selectedDay] || [];
-    }
-    if (selectedTab === "lastWeek") return lastWeekOrders[selectedDay] || [];
-    return monthlyData.map((week, i) => (
-      <div key={i} className="orders-week-block">
-        <div className="week-label">{week.name}</div>
-        <div className="week-dates">{week.range}</div>
-        <div className="week-earnings">
-          Earnings: ₹ {week.earnings.toLocaleString()}
-        </div>
-      </div>
-    ));
-  };
-
-  // -------------------- Order Counts --------------------
-  const totalThisWeekOrders = Object.entries(thisWeekOrders)
-    .slice(0, todayIndex + 1)
-    .reduce((sum, [, orders]) => sum + orders.length, 0);
-
-  const totalLastWeekOrders = Object.values(lastWeekOrders).reduce(
-    (sum: number, orders: Order[]) => sum + orders.length,
-    0
-  );
-
-  const orderCount =
-    selectedTab === "today"
-      ? `${todayOrders.length} Orders`
-      : selectedTab === "week"
-        ? `${totalThisWeekOrders} Orders`
-        : selectedTab === "lastWeek"
-          ? `${totalLastWeekOrders} Orders`
-          : `${monthlyData.length} weeks`;
-
   const weekRangeText =
     selectedTab === "week"
       ? `${thisWeekRange.from} - ${thisWeekRange.to}`
@@ -202,18 +67,39 @@ const EarningsPage: React.FC = () => {
         ? `${lastWeekRange.from} - ${lastWeekRange.to}`
         : "";
 
-  // -------------------- UI --------------------
-  const totalEarnings =
-    selectedTab === "today"
-      ? todayEarnings
-      : selectedTab === "week"
-        ? weekEarnings
-        : selectedTab === "lastWeek"
-          ? lastWeekEarnings
-          : monthEarnings;
+  console.log(earnings, selectedTab);
+
+  const fetchEarnings = async (filter: string) => {
+    const data = await api.get<any>(`/partner/earnings/${filter}/details`);
+    setEarnings(data);
+  };
+
+  useEffect(() => {
+    if (!selectedTab) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        await fetchEarnings(selectedTab);
+      } catch (error) {
+        console.error("error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [selectedTab]);
+
+  const {
+    total_delivery_fees: totalEarnings = 0,
+    total_deliveries: noOfDeliveries = 0,
+    total_tips: totalTips = 0,
+    orders = [],
+  } = earnings
 
   const openLastOrder = (orderId: string) => {
-    history.push(`/LastOrderDetails/${orderId}`);
+    // history.push(`/LastOrderDetails/${orderId}`);
   };
 
   return (
@@ -267,8 +153,8 @@ const EarningsPage: React.FC = () => {
           <section className="summary-grid">
             <div className="earnings-card">
               <div className="card-label">Total Earnings</div>
-              <div className="card-value">₹ {totalEarnings.toFixed(2)}</div>
-              <div className="card-subtext">{orderCount}</div>
+              <div className="card-value">₹ {totalEarnings?.toFixed(2)}</div>
+              <div className="card-subtext">{noOfDeliveries} Orders</div>
               {weekRangeText && (
                 <div className="card-subtext">({weekRangeText})</div>
               )}
@@ -277,104 +163,45 @@ const EarningsPage: React.FC = () => {
             <div className="earnings-card">
               <div className="card-label">Tips</div>
               <div className="card-value">
-                ₹ {(totalEarnings * 0.1).toFixed(2)}
+                ₹ {totalTips?.toFixed(2)}
               </div>
               <div className="card-subtext">Included in total</div>
             </div>
 
             <div className="earnings-card">
               <div className="card-label">Available for Payout</div>
-              <div className="card-value">₹ {totalEarnings.toFixed(2)}</div>
+              <div className="card-value">₹ {totalEarnings?.toFixed(2)}</div>
               {/* <div className="payout-actions">
                 <IonButton size="small" color="primary"><IonIcon icon={cashOutline} slot="start" /><p className="withdraw-button-text">Withdraw</p></IonButton>
               </div> */}
             </div>
           </section>
 
-          {(selectedTab === "week" ||
-            selectedTab === "lastWeek" ||
-            selectedTab === "month") && (
-              <section className="chart-section">
-                <div className="chart-header">
-                  <div className="chart-title">
-                    {selectedTab === "week"
-                      ? "Earnings This Week"
-                      : selectedTab === "lastWeek"
-                        ? "Earnings Last Week"
-                        : "Earnings This Month"}
-                  </div>
-                </div>
-                <div className="chart-container">
-                  <ResponsiveContainer width="100%" height={150}>
-                    <BarChart
-                      data={
-                        selectedTab === "week"
-                          ? thisWeekData.slice(0, todayIndex + 1)
-                          : selectedTab === "lastWeek"
-                            ? lastWeekData
-                            : monthlyData
-                      }
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="name"
-                        tick={{ fontSize: 12 }} // ← Smaller weekday labels
-                      />
-                      <YAxis tick={{ fontSize: 12 }} /> {/* ← Smaller Y-axis numbers */}
-                      <Tooltip />
-                      <Bar dataKey="earnings" fill="#a50505" barSize={20} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </section>
-            )}
-
           <div className="section-divider"></div>
 
           {/* Orders */}
           <section className="orders-section">
-            {(selectedTab === "week" || selectedTab === "lastWeek") && (
-              <div className="orders-dropdown">
-                <select
-                  className="day-selector"
-                  value={selectedDay}
-                  onChange={(e) => setSelectedDay(e.target.value)}
-                >
-                  {dayNames.map((d, i) => (
-                    <option
-                      key={d}
-                      value={d}
-                      disabled={selectedTab === "week" && i > todayIndex}
-                    >
-                      {d}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
 
             <div className="orders-list">
-              {selectedTab === "month"
-                ? renderOrders()
-                : renderOrders().map((order: any) => (
-                  <div key={order.id} className="order-item" onClick={() => openLastOrder(order.id)}>
-                    <div className="order-left">
-                      <div className="order-id">{order.id}</div>
-                      <div className="order-date">{order.date}</div>
+              {orders?.map((order: any) => (
+                <div key={order.id} className="order-item" onClick={() => openLastOrder(order.id)}>
+                  <div className="order-left">
+                    <div className="order-id">MAR-{order?.order_number}</div>
+                    <div className="order-date">{formatDate(order?.delivery_time)}</div>
+                  </div>
+                  <div className="order-right">
+                    <div className="order-amount">
+                      ₹ {order?.total_earnings.toFixed(2)}
                     </div>
-                    <div className="order-right">
-                      <div className="order-amount">
-                        ₹ {order.total.toFixed(2)}
-                      </div>
-                      <div className="order-dist">
-                        Distance: {order.dist} Kms
-                      </div>
-                      <div className="order-tip">
-                        Earnings: ₹ {order.earnings.toFixed(2)}
-                      </div>
+                    <div className="order-dist">
+                      Distance: {order.distance || 0} Kms
+                    </div>
+                    <div className="order-tip">
+                      Tips: ₹ {order?.tips?.toFixed(2) || '0.00'}
                     </div>
                   </div>
-                ))}
+                </div>
+              ))}
             </div>
           </section>
         </div>

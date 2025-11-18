@@ -33,10 +33,19 @@ const EditBankDetailsPage: React.FC = () => {
     // ✅ Load stored profile once
     useEffect(() => {
         const loadProfile = async () => {
-            const storedProfile = await store.get('profile');
+            const storedProfile = await store.get("profile");
+
             if (storedProfile) {
                 setUser(storedProfile);
-                setBankDetails(storedProfile.bankDetails || {});
+
+                // Always set defaults
+                setBankDetails({
+                    bankName: storedProfile.bankDetails?.bankName || "",
+                    accountNumber: storedProfile.bankDetails?.accountNumber || "",
+                    ifscCode: storedProfile.bankDetails?.ifscCode || "",
+                    branch: storedProfile.bankDetails?.branch || "",
+                    upiId: storedProfile.bankDetails?.upiId || ""
+                });
             }
         };
         loadProfile();

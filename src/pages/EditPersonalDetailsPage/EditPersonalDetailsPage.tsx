@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     IonPage,
     IonHeader,
@@ -13,16 +13,62 @@ import {
     IonLabel,
     IonButtons,
     IonBackButton,
+    IonToast
 } from '@ionic/react';
 import './EditPersonalDetailsPage.css';
+import { api } from '../../services/api';
+import store from '../../utils/storage';
 
 const EditPersonalDetailsPage: React.FC = () => {
-    const [email, setEmail] = useState('mohammed@example.com');
+    const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [showToast, setShowToast] = useState<{ message: string; color: string } | null>(null);
 
-    const handleSave = () => {
-        console.log('Updated Email:', email);
-        alert('Personal details updated successfully!');
+    const loadPartnerDetails = async () => {
+        try {
+            const storedProfile = await store.get("profile");
+
+            if (storedProfile) {
+                setEmail(storedProfile.email || '');
+            } else {
+                setShowToast({ message: 'No profile found in storage', color: 'warning' });
+            }
+        } catch (error) {
+            console.error('Failed loading partner:', error);
+            setShowToast({ message: 'Failed to load details', color: 'danger' });
+        }
     };
+
+
+    useEffect(() => {
+        loadPartnerDetails();
+    }, []);
+
+    const handleSave = async () => {
+        try {
+            setLoading(true);
+
+            await api.put('/deliveryPartners/update-profile', { email });
+
+            // update stored profile
+            const storedProfile = await store.get("profile");
+            if (storedProfile) {
+                storedProfile.email = email;
+                await store.set("profile", storedProfile);
+            }
+            console.log(storedProfile,'ss');
+
+            setShowToast({ message: 'Personal details updated!', color: 'success' });
+
+            // setTimeout(() => window.history.back(), 800);
+
+        } catch (err) {
+            setShowToast({ message: 'Failed to update details', color: 'danger' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     const handleCancel = () => {
         window.history.back();
@@ -61,21 +107,33 @@ const EditPersonalDetailsPage: React.FC = () => {
                                 shape="round"
                                 fill="outline"
                                 onClick={handleCancel}
+                                disabled={loading}
                             >
                                 Cancel
                             </IonButton>
+
                             <IonButton
                                 expand="block"
                                 color="primary"
                                 shape="round"
                                 onClick={handleSave}
+                                disabled={loading}
                             >
-                                Save
+                                {loading ? 'Saving...' : 'Save'}
                             </IonButton>
-
                         </div>
                     </IonCardContent>
                 </IonCard>
+
+                {showToast && (
+                    <IonToast
+                        isOpen={true}
+                        message={showToast.message}
+                        duration={1500}
+                        color={showToast.color}
+                        onDidDismiss={() => setShowToast(null)}
+                    />
+                )}
             </IonContent>
         </IonPage>
     );
