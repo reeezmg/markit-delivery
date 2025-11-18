@@ -12,6 +12,7 @@ import {
   IonIcon,
   IonLabel,
   IonButton,
+  useIonViewWillEnter,
 } from '@ionic/react';
 import {
   callOutline,
@@ -31,15 +32,20 @@ const ProfilePage: React.FC = () => {
 
   // store.remove("profile");
 
-  useEffect(() => {
+  // useEffect(() => {
+
+  //   loadProfile();
+  // }, []);
+
+  useIonViewWillEnter(() => {
     const loadProfile = async () => {
       const storedProfile = await store.get("profile");
       if (storedProfile) {
         setUser(storedProfile);
       }
     };
-    loadProfile();
-  }, []);
+    loadProfile();   // ← runs every time page becomes visible
+  });
 
   console.log(user, 'user-profile');
 

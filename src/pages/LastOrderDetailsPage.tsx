@@ -21,7 +21,7 @@ import './LastOrderDetailsPage.css';
 import { useLocation, useParams } from 'react-router';
 import { api } from '../services/api';
 import { Order } from '../types/types';
-import { formattedOrders } from '../utils/helper';
+import { formattedOrders, formatTimeTo12Hour } from '../utils/helper';
 
 const LastOrderDetailsPage: React.FC = () => {
   const [orderDetail, setOrderDetails] = React.useState<any>({});
@@ -33,15 +33,28 @@ const LastOrderDetailsPage: React.FC = () => {
   const order = location.state?.order;
   const { orderId } = useParams<{ orderId: string }>();
 
+  const loadLastOrder = async () => {
+    try {
+      const data = await api.get<Order[]>(`/orders/${orderId}`);
+      const formattedData = formattedOrders([data]);
+      console.log('data :>> ', data, formattedData);
+      setOrderDetails(formattedData[0]);
+    } catch (error) {
+      console.error('Failed to load orders:', error);
+    }
+  };
+
   useEffect(() => {
     if (order) {
       setOrderDetails(order);
+    } else {
+      loadLastOrder();
     }
-  }, [isLastOrder, order]);
+  }, [isLastOrder, order, orderId]);
 
-  console.log(order, 'order-routed', isLastOrder);
+  console.log(orderDetail, 'order-routed', isLastOrder);
 
-  const items = order?.cart_items?.map((d) => ({
+  const items = orderDetail?.cart_items?.map((d) => ({
     name: `${d.variant.code} ${d.variant.name} ${d.item.size}`,
     qty: d.quantity,
     price: d.variant.sprice,
@@ -53,13 +66,13 @@ const LastOrderDetailsPage: React.FC = () => {
     { label: 'From', value: orderDetail?.from || '' },
     { label: 'To', value: orderDetail?.to || '' },
     { label: 'Start Time:', value: orderDetail?.pickup_time || '12 PM' },
-    { label: 'End Time', value: orderDetail?.delivery_time || '12:30 PM' },
+    { label: 'End Time', value: formatTimeTo12Hour(orderDetail?.delivery_time) || '12:30 PM' },
   ];
 
   const paymentDetails = [
-    { label: 'Delivery Fee', value: orderDetail?.deliverFees || '₹100' },
-    { label: 'Waiting Charges', value: orderDetail?.waitingFees || '₹30' },
-    { label: 'Tip', value: orderDetail?.tip || '₹20' },
+    { label: 'Delivery Fee', value: orderDetail?.deliverFees || '₹0' },
+    { label: 'Waiting Charges', value: orderDetail?.waitingFees || '₹0' },
+    { label: 'Tip', value: orderDetail?.tip || '₹0' },
   ];
 
   const totalDeliveryCharges = {
@@ -73,7 +86,7 @@ const LastOrderDetailsPage: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/OrdersPage" />
+            <IonBackButton defaultHref="/" />
           </IonButtons>
           <IonTitle>{isLastOrder ? 'Last Order Details' : 'Order Details'}</IonTitle>
         </IonToolbar>

@@ -93,3 +93,15 @@ export const mapPartnerToUser = (partnerData) => {
         bankDetails,
     };
 };
+
+export const formatDate = (date) => date ? new Date(date)
+    .toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "N/A";
+
+export const formatTimeTo12Hour = (isoString: string) => {
+    const date = new Date(isoString);
+    return date.toLocaleString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+    });
+};

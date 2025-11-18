@@ -34,6 +34,13 @@ const AllOrderDetailsPage: React.FC = () => {
   const isTodayFilter = new URLSearchParams(location.search).get("filter") === "today";
   let formattedDate;
 
+  useEffect(() => {
+    if (isTodayFilter) {
+      const today = new Date();
+      setSelectedDate(today.toDateString());
+    }
+  }, [isTodayFilter]);
+
   // 🧾 Format selected date → YYYY-MM-DD
   if (selectedDate) {
     const dateObj = new Date(selectedDate);
@@ -98,7 +105,7 @@ const AllOrderDetailsPage: React.FC = () => {
       <IonHeader>
         <IonToolbar color="primary">
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/OrdersPage" />
+            <IonBackButton defaultHref="/" />
           </IonButtons>
           <IonTitle>{isTodayFilter ? "Today's Orders" : "All Orders"}</IonTitle>
         </IonToolbar>
