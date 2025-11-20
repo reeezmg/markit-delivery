@@ -92,7 +92,7 @@ const EarningsPage: React.FC = () => {
   }, [selectedTab]);
 
   const {
-    total_delivery_fees: totalEarnings = 0,
+    total_earnings: totalEarnings = 0,
     total_deliveries: noOfDeliveries = 0,
     total_tips: totalTips = 0,
     orders = [],

@@ -57,7 +57,14 @@ export const formattedOrders = (orders) => orders.map((order) => {
             : formattedStores[0]?.address || "";
 
     // Example: Earned = subtotal - discount + shipping
-    const earned = order.subtotal - (order.total_discount || 0) + (order.shipping || 0);
+    const totalBill = order.subtotal - (order.total_discount || 0) + (order.shipping || 0);
+
+    const earningDetails = order.earnings_details?.[0] || {};
+    const earned = earningDetails
+        ? Number(earningDetails.deliverFees || 0) +
+        Number(earningDetails.tips || 0) +
+        Number(earningDetails.waitingFees || 0)
+        : 0;
 
     return {
         id: order.id,
@@ -67,6 +74,7 @@ export const formattedOrders = (orders) => orders.map((order) => {
         fromStoreList: fromStoreList,
         from,
         to,
+        totalBill,
         earned,
         status: order.order_status,
         ...order

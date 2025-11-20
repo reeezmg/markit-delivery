@@ -13,20 +13,32 @@ import {
     IonLabel
 } from "@ionic/react";
 import "./HelpSupportPage.css";
+import { api } from "../../services/api";
 
 const HelpSupportPage: React.FC = () => {
     const [title, setTitle] = useState("");
     const [query, setQuery] = useState("");
 
-    const handleSubmit = () => {
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async () => {
         if (!title || !query) {
             alert("Please fill out all fields.");
             return;
         }
-        console.log("Submitted:", { title, query });
-        alert("Your grievance has been submitted successfully!");
-        setTitle("");
-        setQuery("");
+
+        try {
+            setLoading(true);
+            await api.post('/support', { title, query });
+            alert("Your grievance has been submitted successfully!");
+            setTitle("");
+            setQuery("");
+        } catch (err) {
+            console.error('Failed to send support request', err);
+            alert("Failed to submit. Please try again later.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
