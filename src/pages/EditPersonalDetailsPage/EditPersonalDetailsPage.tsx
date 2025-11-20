@@ -50,17 +50,16 @@ const EditPersonalDetailsPage: React.FC = () => {
 
             await api.put('/deliveryPartners/update-profile', { email });
 
-            // update stored profile
+            // update stored profile correctly
             const storedProfile = await store.get("profile");
             if (storedProfile) {
-                storedProfile.email = email;
-                await store.set("profile", storedProfile);
+                await store.set("profile", {
+                    ...storedProfile,
+                    email: email
+                });
             }
-            console.log(storedProfile,'ss');
 
             setShowToast({ message: 'Personal details updated!', color: 'success' });
-
-            // setTimeout(() => window.history.back(), 800);
 
         } catch (err) {
             setShowToast({ message: 'Failed to update details', color: 'danger' });
@@ -68,6 +67,7 @@ const EditPersonalDetailsPage: React.FC = () => {
             setLoading(false);
         }
     };
+
 
 
     const handleCancel = () => {

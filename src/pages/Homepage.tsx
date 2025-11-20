@@ -31,12 +31,10 @@ import { api } from "../services/api";
 import store from "../utils/storage";
 import { mapPartnerToUser } from "../utils/helper";
 
-
-
-
 const HomePage: React.FC = () => {
   const [isOnline, setIsOnline] = useState(false);
   const [isActiveOrderAvailable, setIsActiveOrderAvailable] = useState(true);
+  const [todaysEarnings, setTodaysEarnings] = useState({} as any);
   const toggleLiveStatus = () => setIsOnline(!isOnline);
   const history = useHistory();
   const { showPopup } = useIncomingOrderPopup();
@@ -66,6 +64,30 @@ const HomePage: React.FC = () => {
 
     loadProfile();
   }, []);
+
+  const fetchEarnings = async (filter: string) => {
+    const data = await api.get<any>(`/partner/earnings/${filter}/details`);
+    setTodaysEarnings(data);
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        await fetchEarnings('today');
+      } catch (error) {
+        console.error("error:", error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  console.log(todaysEarnings, 'ttt');
+  const {
+    total_earnings: totalEarningsForToday = 0,
+    total_deliveries: noOfDeliveries = 0,
+    total_tips: totalTips = 0,
+    orders = [],
+  } = todaysEarnings;
 
   // useEffect(() => {
   //   const unsubscribe = onMessage(messaging, (payload) => {
@@ -160,11 +182,11 @@ const HomePage: React.FC = () => {
           <IonCard className="earnings-card-home-page">
             <IonCardContent>
               <div className="earnings-header-home-page">
-                <h2>₹ 1,250</h2>
+                <h2>₹ {totalEarningsForToday}</h2>
                 <p>Today's Earnings</p>
               </div>
               <div className="earnings-sub">
-                <span>{ordersCompletedToday} Orders completed</span>
+                <span>{noOfDeliveries} Orders completed</span>
                 <IonButton fill="clear" size="small" color="primary" onClick={openAllOrders}>
                   View Details <IonIcon icon={arrowForwardOutline} />
                 </IonButton>
@@ -186,15 +208,15 @@ const HomePage: React.FC = () => {
                 <div className="progress-bar">
                   <div
                     className="progress-fill"
-                    style={{ width: `${Math.min((8 / 10) * 100, 100)}%` }} // example: 5 out of 10 orders
+                    style={{ width: `${Math.min((noOfDeliveries / 10) * 100, 100)}%` }} // example: 5 out of 10 orders
                   ></div>
                   <IonIcon
                     icon={bicycleOutline}
                     className="bike-icon"
-                    style={{ left: `${Math.min((8 / 10) * 100, 100)}%` }}
+                    style={{ left: `${Math.min((noOfDeliveries / 10) * 100, 100)}%` }}
                   />
                 </div>
-                <p className="progress-text">8 / 10 orders completed</p>
+                <p className="progress-text">{noOfDeliveries} / 10 orders completed</p>
               </div>
             </IonCardContent>
           </IonCard>

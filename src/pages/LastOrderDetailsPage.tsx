@@ -171,7 +171,7 @@ const LastOrderDetailsPage: React.FC = () => {
               <div
                 className='total-collected-amount-wrapper'
               >
-                <IonLabel>Total Collected: </IonLabel> ₹230
+                <IonLabel>Total Collected: </IonLabel> {orderDetail?.totalBill || '₹0'}
               </div>
 
             </IonCardContent>

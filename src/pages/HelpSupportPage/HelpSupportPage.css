@@ -60,3 +60,19 @@
     text-decoration: none;
     font-weight: 500;
 }
+
+.help-input,
+.help-textarea {
+    /* --background: #f8f8f8; */
+    --padding-start: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+/* ensure inner native elements get visible padding (for IonInput / IonTextarea shadow DOM) */
+.help-input::part(native),
+.help-textarea::part(native) {
+    padding: 10px;
+    box-sizing: border-box;
+}
