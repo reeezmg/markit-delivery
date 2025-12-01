@@ -44,6 +44,8 @@ import DeliveredPage from "./pages/OrderWalkthrough/DeliveredPage";
 import DeliverySuccessPage from "./pages/OrderWalkthrough/DeliverySuccessPage";
 import WalletPage from "./pages/WalletPage/WalletPage";
 import { StatusBar, Style } from '@capacitor/status-bar';
+import SignupDetailsPage from "./pages/SignUpDetailsPage";
+import VerificationPendingScreen from "./pages/VerificationPendingScreen";
 
 StatusBar.setStyle({ style: Style.Dark }); // or Style.Light
 StatusBar.setBackgroundColor({ color: '#ffffff' });
@@ -71,6 +73,8 @@ const AppContent: React.FC = () => {
         <IonRouterOutlet id="main-content">
           <Route path="/" render={() => <Redirect to={isLoggedIn ? "/HomePage" : "/login"} />} exact />
           <Route path="/login" render={() => (!isLoggedIn ? <Login /> : <Redirect to="/HomePage" />)} exact />
+          <Route path="/SignupDetailsPage" component={SignupDetailsPage} exact />
+          <Route path="/VerificationPendingScreen" component={VerificationPendingScreen} exact />
           <Route path="/HomePage" render={() => (isLoggedIn ? <HomePage /> : <Redirect to="/login" />)} exact />
           <Route path="/OrdersPage" render={() => (isLoggedIn ? <OrdersPage /> : <Redirect to="/login" />)} exact />
           <Route path="/ProfilePage" render={() => (isLoggedIn ? <ProfilePage /> : <Redirect to="/login" />)} exact />

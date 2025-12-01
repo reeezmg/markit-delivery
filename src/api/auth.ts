@@ -23,6 +23,11 @@ export const generateOtp = async (phone) => {
     return res.data;
   } catch (error) {
     console.error('Error generating OTP:', error);
-    return error;
+    throw error;
   }
 };
+
+export const signUp = async (name, phone) => {
+  return await api.post("/auth/deliveryPartner/signup", { name, phone });
+};
+
