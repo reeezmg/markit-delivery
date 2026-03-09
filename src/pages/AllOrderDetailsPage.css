@@ -1,0 +1,92 @@
+.dates-bar {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: #ffffff;
+    border-radius: 30px;
+    padding: 8px 6px;
+    margin-top: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    overflow-x: auto;
+}
+
+.date-item {
+    text-align: center;
+    width: 48px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: all 0.25s ease;
+}
+
+.date-item.active {
+    background-color: #a50505;
+    color: white;
+}
+
+.day-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.date-item.active .day-name {
+    color: white;
+}
+
+.day-number {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e1e1e;
+}
+
+.date-item.active .day-number {
+    color: white;
+}
+
+.date-item.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+.order-card {
+    margin-bottom: 24px;
+}
+
+.order-card.completed {
+    border-left: 4px solid var(--ion-color-success);
+}
+
+.order-card.pending {
+    border-left: 4px solid var(--ion-color-warning);
+}
+
+.order-card.cancelled {
+    border-left: 4px solid var(--ion-color-danger);
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 3rem;
+    color: #666;
+}
+
+.loading-container p {
+    margin-top: 0.5rem;
+    font-size: 1rem;
+}
+
+.no-orders-card {
+    text-align: center;
+    padding: 1rem;
+}
+
+.no-orders-title {
+    color: #888;
+    font-size: 1rem;
+}

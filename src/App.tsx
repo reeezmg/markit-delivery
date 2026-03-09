@@ -1,85 +1,131 @@
-import { Redirect, Route } from 'react-router-dom';
+import { Redirect, Route, useLocation } from "react-router-dom";
 import {
   IonApp,
-  IonIcon,
-  IonLabel,
   IonRouterOutlet,
   IonTabBar,
   IonTabButton,
   IonTabs,
-  setupIonicReact
-} from '@ionic/react';
-import { IonReactRouter } from '@ionic/react-router';
-import { ellipse, square, triangle } from 'ionicons/icons';
-import Tab1 from './pages/Tab1';
-import Tab2 from './pages/Tab2';
-import Tab3 from './pages/Tab3';
+  IonIcon,
+  IonLabel,
+  setupIonicReact,
+} from "@ionic/react";
+import { IonReactRouter } from "@ionic/react-router";
+import { home, cart, person } from "ionicons/icons";
 
-/* Core CSS required for Ionic components to work properly */
-import '@ionic/react/css/core.css';
+import HomePage from "./pages/Homepage";
+import OrdersPage from "./pages/OrdersPage";
+import ProfilePage from "./pages/ProfilePage";
+import Login from "./pages/Login";
+import BankDetailsPage from "./pages/BankDetailsPage";
+import ActiveOrderDetailsPage from "./pages/ActiveOrderDetailsPage";
+import LastOrderDetailsPage from "./pages/LastOrderDetailsPage";
+import AllOrderDetailsPage from "./pages/AllOrderDetailsPage";
+import Sidebar from "./components/SideBar";
 
-/* Basic CSS for apps built with Ionic */
-import '@ionic/react/css/normalize.css';
-import '@ionic/react/css/structure.css';
-import '@ionic/react/css/typography.css';
+import "./pages/Style.css";
+import "@ionic/react/css/core.css";
+import "@ionic/react/css/normalize.css";
+import "@ionic/react/css/structure.css";
+import "@ionic/react/css/typography.css";
+import "@ionic/react/css/padding.css";
+import "@ionic/react/css/flex-utils.css";
+import "@ionic/react/css/display.css";
+import "./theme/variables.css";
+import EditBankDetailsPage from "./pages/EditBankDetailsPage/EditBankDetailsPage";
+import EditPersonalDetailsPage from "./pages/EditPersonalDetailsPage/EditPersonalDetailsPage";
+import IncentiveDetailsPage from "./pages/IncentiveDetailsPage/IncentiveDetailsPage";
+import EarningsPage from "./pages/EarningsPage/EarningsPage";
+import { IncomingOrderPopupProvider } from "./components/IncomingOrderPopup";
+import HelpSupportPage from "./pages/HelpSupportPage/HelpSupportPage";
+import GoToPickupPage from "./pages/OrderWalkthrough/GoToPickupPage";
+import CollectOrderPage from "./pages/OrderWalkthrough/CollectOrderPage";
+import GoToDropPage from "./pages/OrderWalkthrough/GoToDropPage";
+import DeliveredPage from "./pages/OrderWalkthrough/DeliveredPage";
+import DeliverySuccessPage from "./pages/OrderWalkthrough/DeliverySuccessPage";
+import WalletPage from "./pages/WalletPage/WalletPage";
+import { StatusBar, Style } from '@capacitor/status-bar';
+import SignupDetailsPage from "./pages/SignUpDetailsPage";
+import VerificationPendingScreen from "./pages/VerificationPendingScreen";
 
-/* Optional CSS utils that can be commented out */
-import '@ionic/react/css/padding.css';
-import '@ionic/react/css/float-elements.css';
-import '@ionic/react/css/text-alignment.css';
-import '@ionic/react/css/text-transformation.css';
-import '@ionic/react/css/flex-utils.css';
-import '@ionic/react/css/display.css';
+StatusBar.setStyle({ style: Style.Dark }); // or Style.Light
+StatusBar.setBackgroundColor({ color: '#ffffff' });
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-
-/* import '@ionic/react/css/palettes/dark.always.css'; */
-/* import '@ionic/react/css/palettes/dark.class.css'; */
-import '@ionic/react/css/palettes/dark.system.css';
-
-/* Theme variables */
-import './theme/variables.css';
 
 setupIonicReact();
+
+const AppContent: React.FC = () => {
+  const isLoggedIn = !!localStorage.getItem("CapacitorStorage.token");
+  // const isLoggedIn = true;
+  const location = useLocation();
+
+  const handleLogout = () => {
+    localStorage.clear();
+    window.location.href = "/login";
+  };
+
+  const showTabBar = ["/HomePage", "/GoToPickup", "/CollectOrder", "/GoToDrop", "/Delivered", "/MyEarnings", "/OrdersPage", "/ProfilePage"].includes(location.pathname);
+
+  return (
+    <>
+      <Sidebar onLogout={handleLogout} />
+
+      <IonTabs>
+        <IonRouterOutlet id="main-content">
+          <Route path="/" render={() => <Redirect to={isLoggedIn ? "/HomePage" : "/login"} />} exact />
+          <Route path="/login" render={() => (!isLoggedIn ? <Login /> : <Redirect to="/HomePage" />)} exact />
+          <Route path="/SignupDetailsPage" component={SignupDetailsPage} exact />
+          <Route path="/VerificationPendingScreen" component={VerificationPendingScreen} exact />
+          <Route path="/HomePage" render={() => (isLoggedIn ? <HomePage /> : <Redirect to="/login" />)} exact />
+          <Route path="/OrdersPage" render={() => (isLoggedIn ? <OrdersPage /> : <Redirect to="/login" />)} exact />
+          <Route path="/ProfilePage" render={() => (isLoggedIn ? <ProfilePage /> : <Redirect to="/login" />)} exact />
+          <Route path="/BankDetailsPage" render={() => (isLoggedIn ? <BankDetailsPage /> : <Redirect to="/login" />)} exact />
+          <Route path="/EditBankDetailsPage" render={() => (isLoggedIn ? <EditBankDetailsPage /> : <Redirect to="/login" />)} exact />
+          <Route path="/EditPersonalDetailsPage" render={() => (isLoggedIn ? <EditPersonalDetailsPage /> : <Redirect to="/login" />)} exact />
+          <Route path="/ActiveOrderDetails" component={ActiveOrderDetailsPage} exact />
+          <Route path="/LastOrderDetails/:orderId" component={LastOrderDetailsPage} exact />
+          <Route path="/OrderDetails/:orderId" component={LastOrderDetailsPage} exact />
+          <Route path="/AllOrderDetails" component={AllOrderDetailsPage} exact />
+          <Route path="/IncentiveDetailsPage" component={IncentiveDetailsPage} exact />
+          <Route path="/MyEarnings" component={EarningsPage} exact />
+          <Route path="/HelpSupportPage" component={HelpSupportPage} exact />
+          <Route path="/GoToPickup" component={GoToPickupPage} exact />
+          <Route path="/CollectOrder" component={CollectOrderPage} exact />
+          <Route path="/GoToDrop" component={GoToDropPage} exact />
+          <Route path="/Delivered" component={DeliveredPage} exact />
+          <Route path="/DeliverySuccessPage" component={DeliverySuccessPage} exact />
+          <Route path="/WalletPage" component={WalletPage} exact />
+
+        </IonRouterOutlet>
+
+        {isLoggedIn && showTabBar && (
+          <IonTabBar slot="bottom">
+            <IonTabButton tab="HomePage" href="/HomePage">
+              <IonIcon icon={home} />
+              <IonLabel>Home</IonLabel>
+            </IonTabButton>
+
+            <IonTabButton tab="OrdersPage" href="/OrdersPage">
+              <IonIcon icon={cart} />
+              <IonLabel>Orders</IonLabel>
+            </IonTabButton>
+
+            <IonTabButton tab="ProfilePage" href="/ProfilePage">
+              <IonIcon icon={person} />
+              <IonLabel>Profile</IonLabel>
+            </IonTabButton>
+          </IonTabBar>
+        )}
+      </IonTabs>
+    </>
+  );
+};
 
 const App: React.FC = () => (
   <IonApp>
     <IonReactRouter>
-      <IonTabs>
-        <IonRouterOutlet>
-          <Route exact path="/tab1">
-            <Tab1 />
-          </Route>
-          <Route exact path="/tab2">
-            <Tab2 />
-          </Route>
-          <Route path="/tab3">
-            <Tab3 />
-          </Route>
-          <Route exact path="/">
-            <Redirect to="/tab1" />
-          </Route>
-        </IonRouterOutlet>
-        <IonTabBar slot="bottom">
-          <IonTabButton tab="tab1" href="/tab1">
-            <IonIcon aria-hidden="true" icon={triangle} />
-            <IonLabel>Tab 1</IonLabel>
-          </IonTabButton>
-          <IonTabButton tab="tab2" href="/tab2">
-            <IonIcon aria-hidden="true" icon={ellipse} />
-            <IonLabel>Tab 2</IonLabel>
-          </IonTabButton>
-          <IonTabButton tab="tab3" href="/tab3">
-            <IonIcon aria-hidden="true" icon={square} />
-            <IonLabel>Tab 3</IonLabel>
-          </IonTabButton>
-        </IonTabBar>
-      </IonTabs>
+      <IncomingOrderPopupProvider>
+        <AppContent />
+      </IncomingOrderPopupProvider>
     </IonReactRouter>
   </IonApp>
 );
