@@ -42,6 +42,10 @@ import CollectOrderPage from "./pages/OrderWalkthrough/CollectOrderPage";
 import GoToDropPage from "./pages/OrderWalkthrough/GoToDropPage";
 import DeliveredPage from "./pages/OrderWalkthrough/DeliveredPage";
 import DeliverySuccessPage from "./pages/OrderWalkthrough/DeliverySuccessPage";
+import TrynbuyWaitingPage from "./pages/OrderWalkthrough/TrynbuyWaitingPage";
+import TrynbuyReturnCollectPage from "./pages/OrderWalkthrough/TrynbuyReturnCollectPage";
+import TrynbuyReturnToStorePage from "./pages/OrderWalkthrough/TrynbuyReturnToStorePage";
+import TrynbuyReturnedPage from "./pages/OrderWalkthrough/TrynbuyReturnedPage";
 import WalletPage from "./pages/WalletPage/WalletPage";
 import { StatusBar, Style } from '@capacitor/status-bar';
 import SignupDetailsPage from "./pages/SignUpDetailsPage";
@@ -93,6 +97,10 @@ const AppContent: React.FC = () => {
           <Route path="/GoToDrop" component={GoToDropPage} exact />
           <Route path="/Delivered" component={DeliveredPage} exact />
           <Route path="/DeliverySuccessPage" component={DeliverySuccessPage} exact />
+          <Route path="/TrynbuyWaiting" component={TrynbuyWaitingPage} exact />
+          <Route path="/TrynbuyReturnCollect" component={TrynbuyReturnCollectPage} exact />
+          <Route path="/TrynbuyReturnToStore" component={TrynbuyReturnToStorePage} exact />
+          <Route path="/TrynbuyReturned" component={TrynbuyReturnedPage} exact />
           <Route path="/WalletPage" component={WalletPage} exact />
 
         </IonRouterOutlet>

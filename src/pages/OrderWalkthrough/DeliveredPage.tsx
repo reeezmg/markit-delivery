@@ -1,181 +1,190 @@
 import React, { useEffect, useState } from "react";
 import {
-    IonPage,
-    IonHeader,
-    IonToolbar,
-    IonButtons,
-    IonMenuButton,
-    IonTitle,
-    IonContent,
-    IonButton,
-    IonIcon,
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonMenuButton,
+  IonTitle,
+  IonContent,
+  IonIcon,
+  IonSpinner,
 } from "@ionic/react";
-import { arrowForward, cameraOutline } from "ionicons/icons";
+import { cameraOutline } from "ionicons/icons";
 import { useHistory } from "react-router-dom";
 import SlideToAction from "../../components/SlideToAction";
-import "./DeliveredPage.css"
+import WalkthroughStep from "../../components/WalkthroughStep";
+import { getActiveOrder, getSteps, getAccentColor, setCurrentPage } from "./walkthroughSteps";
+import { api } from "../../services/api";
+import "./OrderWalkthrough.css";
 
-// const [photo, setPhoto] = useState<string | null>(null);
-const items = [
-    { id: 1, name: "Hot Carrot Halwa", price: 171.42, quantity: 3 },
-    { id: 2, name: "Samosa", price: 309.5, quantity: 5 },
-    { id: 3, name: "Paneer Butter Masala", price: 249.0, quantity: 2 },
-    { id: 4, name: "Veg Biryani", price: 199.99, quantity: 4 },
-    { id: 5, name: "Gulab Jamun", price: 89.5, quantity: 6 },
-    { id: 6, name: "Masala Dosa", price: 120.75, quantity: 3 },
-    { id: 7, name: "Chole Bhature", price: 180.25, quantity: 2 },
-    { id: 8, name: "Tandoori Roti", price: 25.0, quantity: 10 },
-    { id: 9, name: "Butter Naan", price: 35.0, quantity: 8 },
-    { id: 10, name: "Mango Lassi", price: 90.0, quantity: 5 },
-];
-
+interface CartItem {
+  id: string;
+  productName: string;
+  variantName: string;
+  size: string;
+  barcode: string;
+  quantity: number;
+  price: number;
+}
 
 const DeliveredPage: React.FC = () => {
-    const [minutes, setMinutes] = useState(20);
-    const [seconds, setSeconds] = useState(0);
-    const [photo, setPhoto] = useState<string | null>(null);
-    const history = useHistory();
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const history = useHistory();
 
-    // countdown timer
-    useEffect(() => {
-        const timer = setInterval(() => {
-            if (seconds > 0) {
-                setSeconds((s) => s - 1);
-            } else if (minutes > 0) {
-                setMinutes((m) => m - 1);
-                setSeconds(59);
-            }
-        }, 1000);
+  const order = getActiveOrder();
+  const steps = getSteps(order.type);
+  const accentColor = getAccentColor(order.type);
+  const trynbuyId: string | undefined = order.trynbuyId || order.trynbuy_id;
 
-        return () => clearInterval(timer);
-    }, [minutes, seconds]);
+  useEffect(() => { setCurrentPage("/Delivered"); }, []);
 
-    return (
-        <IonPage>
-            <IonHeader>
-                <IonToolbar className="collect-toolbar">
-                    <IonButtons slot="start">
-                        <IonMenuButton />
-                    </IonButtons>
-                    <IonTitle>Complete Delivery</IonTitle>
+  useEffect(() => {
+    if (!trynbuyId) { setLoading(false); return; }
+    api.get<any>(`/orders/${trynbuyId}`)
+      .then((data) => {
+        const items: CartItem[] = (data.cart_items ?? []).map((ci: any) => ({
+          id: ci.id,
+          productName: ci.product?.name ?? "—",
+          variantName: ci.variant?.name ?? "—",
+          size: ci.item?.size ?? "—",
+          barcode: ci.item?.barcode ?? "—",
+          quantity: ci.quantity,
+          price: ci.variant?.dprice ?? ci.variant?.sprice ?? 0,
+        }));
+        setCartItems(items);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [trynbuyId]);
 
-                </IonToolbar>
-            </IonHeader>
+  return (
+    <IonPage>
+      <IonHeader>
+        <IonToolbar>
+          <IonButtons slot="start">
+            <IonMenuButton />
+          </IonButtons>
+          <IonTitle>Complete Delivery</IonTitle>
+        </IonToolbar>
+      </IonHeader>
 
-            <IonContent fullscreen>
-                <div className="collect-content">
-                    <div className="order-id">
-                        Order Id : <b>220108140641716</b>
-                    </div>
+      <IonContent fullscreen className="wt-page-bg">
+        <div className="wt-content">
 
-                    <div className="otp-warning">This order requires an OTP</div>
+          {/* Step indicator */}
+          <WalkthroughStep current={4} steps={steps} accentColor={accentColor} />
 
-                    {/* Wait Timer Section */}
-                    <div className="timer-card">
-                        <div className="timer-header">
-                            <div>
-                                <b>Wait Timer</b>
-                                <div className="timer-time">
-                                    {minutes.toString().padStart(2, "0")}:
-                                    {seconds.toString().padStart(2, "0")}
-                                </div>
-                            </div>
-                            <div className="timer-note">
-                                You are now earning ₹1 for each min of waiting (upto 20 mins)
-                            </div>
-                        </div>
+          {/* TnB badge */}
+          {order.type === "Try & Buy" && (
+            <div className="wt-tnb-badge">TRY &amp; BUY ORDER</div>
+          )}
 
-                        <div className="food-ready">
-                            <div>
-                                <b>Please Wait!</b>
-                                <div>Food will be ready in</div>
-                            </div>
-                            <div className="food-time">
-                                <span>22</span>:<span>50</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Delivery Section */}
-                    <div className="delivery-info-card">
-                        <div className="info-header">Delivery</div>
-                        <div className="info-address">
-                            <b>Delivery - Mangalore-Lakshmi</b>
-                            <p>
-                                flat 306, Divya mahal, karangalpady market road, Mallikatte, Kadri,
-                                Mangaluru, Karnataka 575002, India
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Items Section */}
-                    <div className="info-card">
-                        <div className="info-header">Items to Pickup</div>
-                        <table className="items-table">
-                            <thead>
-                                <tr>
-                                    <th>Item Name</th>
-                                    <th>Quantity</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {items.map((item) => (
-                                    <tr key={item.id}>
-                                        <td>
-                                            {item.name} - ₹{item.price}
-                                        </td>
-                                        <td>{item.quantity}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Upload Photo */}
-                    <div className="upload-card">
-                        <div className="info-header">Upload Photo</div>
-                        {/* <div className="upload-box">
-            <IonIcon icon={cameraOutline} className="upload-icon" />
-            <p>Tap to add photo of the package</p>
-          </div> */}
-
-                        <div
-                            className="upload-box"
-                            onClick={() => document.getElementById("photoInput")?.click()}
-                        >
-                            <IonIcon icon={cameraOutline} className="upload-icon" />
-                            <p>{photo ? "Photo added ✅" : "Tap to add photo of the package"}</p>
-                            <input
-                                id="photoInput"
-                                type="file"
-                                accept="image/*"
-                                style={{ display: "none" }}
-                                onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) setPhoto(URL.createObjectURL(file));
-                                }}
-                            />
-                            {photo && <img src={photo} alt="Preview" className="photo-preview" />}
-                        </div>
-
-                    </div>
-                </div>
-            </IonContent>
-
-            {/* Bottom Button */}
-            <div className="pickup-info">
-                <h2>Parika</h2>
-                <p>Near Vijayabank, Marnamikatte, Mangalore</p>
- 
-                {/* ✅ Reusable slider component */}
-                <SlideToAction
-                    text="Delivered"
-                    color="var(--ion-color-success, #28a745)"
-                    onSlideComplete={() => history.push("/DeliverySuccessPage")}
-                />
+          {/* Delivery address card */}
+          <div className="wt-card">
+            <div className="wt-card-title">Delivery Address</div>
+            <div className="wt-address-name">Customer</div>
+            <div className="wt-address-text">
+              {order.deliveryAddress ?? "Customer's address"}
             </div>
-        </IonPage>
-    );
+          </div>
+
+          {/* Items delivered card */}
+          <div className="wt-card">
+            <div className="wt-card-title">Items Delivered</div>
+            {loading ? (
+              <div style={{ textAlign: "center", padding: "16px 0" }}>
+                <IonSpinner name="crescent" />
+              </div>
+            ) : (
+              <table className="wt-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Size</th>
+                    <th>Barcode</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cartItems.map((item) => (
+                    <tr key={item.id}>
+                      <td>
+                        <div style={{ fontWeight: 600 }}>{item.productName}</div>
+                        <div style={{ fontSize: 11, color: "#6b7280" }}>{item.variantName}</div>
+                      </td>
+                      <td>{item.size}</td>
+                      <td style={{ fontSize: 11, color: "#6b7280" }}>{item.barcode}</td>
+                      <td>{item.quantity}</td>
+                      <td>₹{item.price}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          {/* Photo upload card */}
+          <div className="wt-card">
+            <div className="wt-card-title">Upload Photo</div>
+            <div
+              className="wt-upload-box"
+              onClick={() => document.getElementById("deliveredPhotoInput")?.click()}
+            >
+              <IonIcon icon={cameraOutline} className="wt-upload-icon" />
+              <p className="wt-upload-text">
+                {photo ? "Photo added ✓" : "Tap to add photo of the delivery"}
+              </p>
+              <input
+                id="deliveredPhotoInput"
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) setPhoto(URL.createObjectURL(file));
+                }}
+              />
+              {photo && <img src={photo} alt="Preview" className="wt-photo-preview" />}
+            </div>
+          </div>
+
+        </div>
+      </IonContent>
+
+      {/* Fixed bottom bar */}
+      <div className="wt-bottom-bar">
+        <div className="wt-bottom-location">
+          <span className="wt-bottom-location-icon">📍</span>
+          <div>
+            <p className="wt-bottom-location-name">Customer</p>
+            <p className="wt-bottom-location-addr">
+              {order.deliveryAddress ?? "Customer's address"}
+            </p>
+          </div>
+        </div>
+        <SlideToAction
+          text="Confirm Delivery"
+          color={accentColor}
+          onSlideComplete={() => {
+            try {
+              const activeOrder = JSON.parse(sessionStorage.getItem("activeOrder") || "{}");
+              if (activeOrder.type === "Try & Buy") {
+                history.push("/TrynbuyWaiting");
+              } else {
+                history.push("/DeliverySuccessPage");
+              }
+            } catch {
+              history.push("/DeliverySuccessPage");
+            }
+          }}
+        />
+      </div>
+    </IonPage>
+  );
 };
 
 export default DeliveredPage;

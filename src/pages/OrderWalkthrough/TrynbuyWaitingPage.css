@@ -1,0 +1,44 @@
+.tnb-badge {
+  background: linear-gradient(90deg, #ff6b35, #ff9500);
+  color: white;
+  text-align: center;
+  padding: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1px;
+  margin: 10px 10px 0;
+  border-radius: 8px;
+}
+
+.waiting-earned {
+  font-size: 24px;
+  font-weight: 700;
+  color: #28a745;
+}
+
+.tnb-step-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.tnb-step {
+  font-size: 14px;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.tnb-step.done {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.tnb-step.active {
+  color: #ff9500;
+  font-weight: 600;
+}
+
+.tnb-step.pending {
+  color: #aaa;
+}

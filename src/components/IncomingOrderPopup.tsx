@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { IonModal, IonButton, IonIcon } from "@ionic/react";
 import { useIonRouter } from "@ionic/react";
 import {
@@ -6,7 +6,10 @@ import {
   cashOutline,
   locationOutline,
 } from "ionicons/icons";
+import { io } from "socket.io-client";
 import "./IncomingOrderPopup.css";
+
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3005";
 
 interface OrderDetails {
   type: string;
@@ -15,6 +18,17 @@ interface OrderDetails {
   earnings: number;
   multi: boolean;
   distance: number;
+  // Earnings breakdown
+  deliveryFee?: number;
+  waitingFeeMax?: number;
+  // Try & Buy specific (optional)
+  waitingMinutes?: number;
+  returnedItems?: { id?: number; name: string; size?: string; quantity: number }[];
+  storeName?: string;
+  storeAddress?: string;
+  storeLat?: number;
+  storeLng?: number;
+  deliveryAddress?: string;
 }
 
 interface IncomingOrderPopupContextType {
@@ -32,6 +46,27 @@ export const IncomingOrderPopupProvider: React.FC<{ children: React.ReactNode }>
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [audio] = useState(new Audio("/sounds/incoming-order.mp3"));
   const router = useIonRouter();
+  const pendingRouteRef = useRef<string | null>(null);
+
+  // Connect to socket and listen for real orders from server
+  useEffect(() => {
+    const socket = io(SOCKET_URL, { transports: ["websocket"] });
+
+    socket.on("connect", () => {
+      socket.emit("joinDeliveryPartners");
+    });
+
+    socket.on("newDeliveryOrder", (orderData: OrderDetails) => {
+      showPopupRef.current(orderData);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  // Ref so the socket effect can always call the latest showPopup
+  const showPopupRef = useRef<(order: OrderDetails) => void>(() => {});
 
   const showPopup = (orderData: OrderDetails) => {
     setOrder(orderData);
@@ -41,32 +76,40 @@ export const IncomingOrderPopupProvider: React.FC<{ children: React.ReactNode }>
     audio.play().catch(() => { });
   };
 
+  // Keep ref current so the socket listener always has the latest version
+  showPopupRef.current = showPopup;
+
   const hidePopup = () => {
     setVisible(false);
-    setOrder(null);
     audio.pause();
     audio.currentTime = 0;
   };
 
   const handleAccept = () => {
+    if (order) {
+      sessionStorage.setItem("activeOrder", JSON.stringify(order));
+    }
+    pendingRouteRef.current = "/GoToPickup";
     hidePopup();
-    router.push("/GoToPickup", "forward"); // ✅ redirect to CollectOrder route
+  };
+
+  const handleDismiss = () => {
+    setOrder(null);
+    if (pendingRouteRef.current) {
+      const route = pendingRouteRef.current;
+      pendingRouteRef.current = null;
+      router.push(route, "forward");
+    }
   };
 
   const handleReject = () => hidePopup();
 
-  useEffect(() => {
-    if (!visible) {
-      audio.pause();
-      audio.currentTime = 0;
-    }
-  }, [visible]);
 
   return (
     <IncomingOrderPopupContext.Provider value={{ showPopup, hidePopup }}>
       {children}
 
-      <IonModal isOpen={visible} onDidDismiss={hidePopup} backdropDismiss={false}>
+      <IonModal isOpen={visible} onDidDismiss={handleDismiss} backdropDismiss={false}>
         {order && (
           <div className="incoming-popup">
             <div className="popup-header">

@@ -7,56 +7,87 @@ import {
   IonMenuButton,
   IonTitle,
   IonContent,
-  IonButton,
   IonIcon,
-  useIonRouter,
+  IonSpinner,
+  useIonViewWillEnter,
 } from "@ionic/react";
-import { arrowBack, cameraOutline } from "ionicons/icons";
-import "./CollectOrderPage.css";
-import SlideToAction from "../../components/SlideToAction";
+import { cameraOutline } from "ionicons/icons";
 import { useHistory } from "react-router";
+import SlideToAction from "../../components/SlideToAction";
+import WalkthroughStep from "../../components/WalkthroughStep";
+import { getActiveOrder, getSteps, getAccentColor, setCurrentPage } from "./walkthroughSteps";
+import { api } from "../../services/api";
+import "./OrderWalkthrough.css";
 
-const items = [
-  { id: 1, name: "Hot Carrot Halwa", price: 171.42, quantity: 3 },
-  { id: 2, name: "Samosa", price: 309.5, quantity: 5 },
-  { id: 3, name: "Paneer Butter Masala", price: 249.0, quantity: 2 },
-  { id: 4, name: "Veg Biryani", price: 199.99, quantity: 4 },
-  { id: 5, name: "Gulab Jamun", price: 89.5, quantity: 6 },
-  { id: 6, name: "Masala Dosa", price: 120.75, quantity: 3 },
-  { id: 7, name: "Chole Bhature", price: 180.25, quantity: 2 },
-  { id: 8, name: "Tandoori Roti", price: 25.0, quantity: 10 },
-  { id: 9, name: "Butter Naan", price: 35.0, quantity: 8 },
-  { id: 10, name: "Mango Lassi", price: 90.0, quantity: 5 },
-];
+interface CartItem {
+  id: string;
+  productName: string;
+  variantName: string;
+  size: string;
+  barcode: string;
+  quantity: number;
+  price: number;
+}
 
 const CollectOrderPage: React.FC = () => {
-  const [minutes, setMinutes] = useState(20);
-  const [seconds, setSeconds] = useState(0);
+  const [elapsed, setElapsed] = useState(0); // total seconds elapsed
   const [photo, setPhoto] = useState<string | null>(null);
-  const router = useHistory(); // 👈 Ionic Router hook (better than useHistory)
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [loadingItems, setLoadingItems] = useState(true);
+  const router = useHistory();
 
-  // ✅ Countdown timer
+  const order = getActiveOrder();
+  const steps = getSteps(order.type);
+  const accentColor = getAccentColor(order.type);
+  const trynbuyId: string | undefined = order.trynbuyId || order.trynbuy_id;
+
+  useEffect(() => {
+    if (!trynbuyId) { setLoadingItems(false); return; }
+    api.get<any>(`/orders/${trynbuyId}`)
+      .then((data) => {
+        const items: CartItem[] = (data.cart_items ?? []).map((ci: any) => ({
+          id: ci.id,
+          productName: ci.product?.name ?? "—",
+          variantName: ci.variant?.name ?? "—",
+          size: ci.item?.size ?? "—",
+          barcode: ci.item?.barcode ?? "—",
+          quantity: ci.quantity,
+          price: ci.variant?.dprice ?? ci.variant?.sprice ?? 0,
+        }));
+        setCartItems(items);
+      })
+      .catch(() => {})
+      .finally(() => setLoadingItems(false));
+  }, [trynbuyId]);
+
+  useEffect(() => { setCurrentPage("/CollectOrder"); }, []);
+
+  // Reset stopwatch on every page enter (Ionic caches pages)
+  useIonViewWillEnter(() => {
+    setElapsed(0);
+  });
+
+  const displayMinutes = Math.floor(elapsed / 60);
+  const displaySeconds = elapsed % 60;
+  const earning = displayMinutes; // ₹1 per completed minute
+
+  // Stopwatch — counts up
   useEffect(() => {
     const timer = setInterval(() => {
-      if (seconds > 0) {
-        setSeconds((s) => s - 1);
-      } else if (minutes > 0) {
-        setMinutes((m) => m - 1);
-        setSeconds(59);
-      }
+      setElapsed((e) => e + 1);
     }, 1000);
     return () => clearInterval(timer);
-  }, [minutes, seconds]);
+  }, []);
 
-  // ✅ Handle Android system / browser back button
+  // Handle Android system / browser back button
   useEffect(() => {
     const handleBackButton = (ev: any) => {
       ev.preventDefault();
-      router.push("/HomePage", "root"); // 👈 Go to HomePage directly
+      router.push("/HomePage", "root");
     };
 
     document.addEventListener("ionBackButton", handleBackButton);
-    window.onpopstate = () => router.push("/HomePage", "root"); // 👈 Handles browser back too
+    window.onpopstate = () => router.push("/HomePage", "root");
 
     return () => {
       document.removeEventListener("ionBackButton", handleBackButton);
@@ -67,7 +98,7 @@ const CollectOrderPage: React.FC = () => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar className="collect-toolbar">
+        <IonToolbar>
           <IonButtons slot="start">
             <IonMenuButton />
           </IonButtons>
@@ -75,87 +106,87 @@ const CollectOrderPage: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent fullscreen>
-        <div className="collect-content">
-          <div className="order-id">
-            Order Id : <b>220108140641716</b>
-          </div>
+      <IonContent fullscreen className="wt-page-bg">
+        <div className="wt-content">
 
-          <div className="otp-warning">This order requires an OTP</div>
+          {/* Step indicator */}
+          <WalkthroughStep current={2} steps={steps} accentColor={accentColor} />
 
-          {/* Wait Timer Section */}
-          <div className="timer-card">
-            <div className="timer-header">
-              <div>
-                <b>Wait Timer</b>
-                <div className="timer-time">
-                  {minutes.toString().padStart(2, "0")}:
-                  {seconds.toString().padStart(2, "0")}
-                </div>
-              </div>
-              <div className="timer-note">
-                You are now earning ₹1 for each min of waiting (upto 20 mins)
-              </div>
-            </div>
+          {/* TnB badge */}
+          {order.type === "Try & Buy" && (
+            <div className="wt-tnb-badge">TRY &amp; BUY ORDER</div>
+          )}
 
-            <div className="food-ready">
-              <div>
-                <b>Please Wait!</b>
-                <div>Food will be ready in</div>
-              </div>
-              <div className="food-time">
-                <span>22</span>:<span>50</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Delivery Section */}
-          <div className="delivery-info-card">
-            <div className="info-header">Delivery</div>
-            <div className="info-address">
-              <b>Delivery - Mangalore-Lakshmi</b>
-              <p>
-                flat 306, Divya mahal, karangalpady market road, Mallikatte, Kadri,
-                Mangaluru, Karnataka 575002, India
-              </p>
-            </div>
-          </div>
-
-          {/* Items Section */}
-          <div className="info-card">
-            <div className="info-header">Items to Pickup</div>
-            <table className="items-table">
-              <thead>
-                <tr>
-                  <th>Item Name</th>
-                  <th>Quantity</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item) => (
-                  <tr key={item.id}>
-                    <td>
-                      {item.name} - ₹{item.price}
-                    </td>
-                    <td>{item.quantity}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Upload Photo */}
-          <div className="upload-card">
-            <div className="info-header">Upload Photo</div>
-
+          {/* Wait timer card */}
+          <div className="wt-card">
+            <div className="wt-card-title">Wait Timer</div>
             <div
-              className="upload-box"
-              onClick={() => document.getElementById("photoInput")?.click()}
+              className="wt-timer-display"
+              style={{ color: accentColor }}
             >
-              <IonIcon icon={cameraOutline} className="upload-icon" />
-              <p>{photo ? "Photo added ✅" : "Tap to add photo of the package"}</p>
+              {displayMinutes.toString().padStart(2, "0")}:{displaySeconds.toString().padStart(2, "0")}
+            </div>
+            <div className="wt-timer-label">
+              Earning ₹1 per min while waiting (up to 20 mins)
+            </div>
+            <div className="wt-timer-earning">
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 13, color: "#16a34a" }}>Waiting Fee</div>
+                <div style={{ fontSize: 11, color: "#16a34a" }}>₹1 per min</div>
+              </div>
+              <div className="wt-timer-earning-amount">₹{earning}</div>
+            </div>
+          </div>
+
+          {/* Items card */}
+          <div className="wt-card">
+            <div className="wt-card-title">Items to Collect</div>
+            {loadingItems ? (
+              <div style={{ textAlign: "center", padding: "16px 0" }}>
+                <IonSpinner name="crescent" />
+              </div>
+            ) : (
+              <table className="wt-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Size</th>
+                    <th>Barcode</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cartItems.map((item) => (
+                    <tr key={item.id}>
+                      <td>
+                        <div style={{ fontWeight: 600 }}>{item.productName}</div>
+                        <div style={{ fontSize: 11, color: "#6b7280" }}>{item.variantName}</div>
+                      </td>
+                      <td>{item.size}</td>
+                      <td style={{ fontSize: 11, color: "#6b7280" }}>{item.barcode}</td>
+                      <td>{item.quantity}</td>
+                      <td>₹{item.price}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          {/* Photo upload card */}
+          <div className="wt-card">
+            <div className="wt-card-title">Upload Photo</div>
+            <div
+              className="wt-upload-box"
+              onClick={() => document.getElementById("collectPhotoInput")?.click()}
+            >
+              <IonIcon icon={cameraOutline} className="wt-upload-icon" />
+              <p className="wt-upload-text">
+                {photo ? "Photo added ✓" : "Tap to add photo of the package"}
+              </p>
               <input
-                id="photoInput"
+                id="collectPhotoInput"
                 type="file"
                 accept="image/*"
                 style={{ display: "none" }}
@@ -164,20 +195,29 @@ const CollectOrderPage: React.FC = () => {
                   if (file) setPhoto(URL.createObjectURL(file));
                 }}
               />
-              {photo && <img src={photo} alt="Preview" className="photo-preview" />}
+              {photo && <img src={photo} alt="Preview" className="wt-photo-preview" />}
             </div>
           </div>
+
         </div>
       </IonContent>
 
-      {/* Bottom Section */}
-      <div className="pickup-info">
-        <h2>Parika</h2>
-        <p>Near Vijayabank, Marnamikatte, Mangalore</p>
-
+      {/* Fixed bottom bar */}
+      <div className="wt-bottom-bar">
+        <div className="wt-bottom-location">
+          <span className="wt-bottom-location-icon">🏪</span>
+          <div>
+            <p className="wt-bottom-location-name">
+              {order.storeName ?? "Pickup Store"}
+            </p>
+            <p className="wt-bottom-location-addr">
+              {order.storeAddress ?? "Collect items from the store"}
+            </p>
+          </div>
+        </div>
         <SlideToAction
           text="Collected"
-          color="var(--ion-color-success, #28a745)"
+          color={accentColor}
           onSlideComplete={() => router.push("/GoToDrop", "forward")}
         />
       </div>

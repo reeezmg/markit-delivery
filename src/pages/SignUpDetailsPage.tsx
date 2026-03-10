@@ -87,7 +87,7 @@ const SignupDetailsPage = () => {
             console.log(formData, 'fff');
 
             const response = await axios.put(
-                `${process.env.REACT_APP_API}/deliveryPartner/onboard-user`,
+                `${import.meta.env.VITE_API_URL || 'http://localhost:3005/api'}/deliveryPartner/onboard-user`,
                 formData,
                 {
                     headers: {

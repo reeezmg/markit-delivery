@@ -13,6 +13,7 @@ import {
   IonRow,
   IonCol,
   IonButton,
+  useIonViewWillEnter,
 } from "@ionic/react";
 import {
   menu,
@@ -30,10 +31,11 @@ import { useHistory } from 'react-router';
 import { api } from "../services/api";
 import store from "../utils/storage";
 import { mapPartnerToUser } from "../utils/helper";
+import { getCurrentPage } from "./OrderWalkthrough/walkthroughSteps";
 
 const HomePage: React.FC = () => {
   const [isOnline, setIsOnline] = useState(false);
-  const [isActiveOrderAvailable, setIsActiveOrderAvailable] = useState(true);
+  const [activeOrder, setActiveOrder] = useState<Record<string, any> | null>(null);
   const [todaysEarnings, setTodaysEarnings] = useState({} as any);
   const toggleLiveStatus = () => setIsOnline(!isOnline);
   const history = useHistory();
@@ -81,56 +83,41 @@ const HomePage: React.FC = () => {
     fetchData();
   }, []);
 
-  console.log(todaysEarnings, 'ttt');
+  // Refresh active order check every time the page comes into view
+  useIonViewWillEnter(() => {
+    try {
+      const raw = sessionStorage.getItem("activeOrder");
+      const parsed = raw ? JSON.parse(raw) : null;
+      setActiveOrder(parsed && Object.keys(parsed).length > 0 ? parsed : null);
+    } catch {
+      setActiveOrder(null);
+    }
+  });
+
   const {
     total_earnings: totalEarningsForToday = 0,
     total_deliveries: noOfDeliveries = 0,
-    total_tips: totalTips = 0,
-    orders = [],
   } = todaysEarnings;
 
-  // useEffect(() => {
-  //   const unsubscribe = onMessage(messaging, (payload) => {
-  //     console.log("🔔 Push received:", payload);
-
-  //     if (payload?.data?.notificationType === "ACTIVE_ORDER") {
-  //       setIsActiveOrderAvailable(true);
-  //       console.log("✅ Active order started:", payload.data.orderId);
-  //     }
-
-  //     if (payload?.data?.notificationType === "ORDER_COMPLETED") {
-  //       setIsActiveOrderAvailable(false);
-  //       console.log("🛑 Active order completed.");
-  //     }
-  //   });
-
-  //   return () => unsubscribe();
-  // }, []);
-
-  // ✅ Example — You can later fetch this dynamically
-
-
-  const ordersCompletedToday = 7;
   let incentiveAmount = 0;
-  let incentiveMessage = '';
-
-  if (ordersCompletedToday < 5) {
-    incentiveMessage = `Complete ${5 - ordersCompletedToday} more orders to unlock your first incentive!`;
-  } else if (ordersCompletedToday < 10) {
-    incentiveAmount = 100;
-    incentiveMessage = `You've earned ₹${incentiveAmount} incentive! Deliver ${10 - ordersCompletedToday} more orders to reach ₹300.`;
-  } else {
+  let incentiveTarget = 10;
+  if (noOfDeliveries >= 10) {
     incentiveAmount = 300;
-    incentiveMessage = `Amazing! You've completed ${ordersCompletedToday} orders and earned a ₹${incentiveAmount} bonus!`;
+    incentiveTarget = 10;
+  } else if (noOfDeliveries >= 5) {
+    incentiveAmount = 100;
+    incentiveTarget = 10;
   }
 
   const openAllOrders = () => history.push('/AllOrderDetails');
   const openTodaysOrders = () => history.push('/AllOrderDetails/?filter=today');
-  const openActiveOrder = () => history.push('/ActiveOrderDetails');
   const openEarningsPage = () => history.push('/MyEarnings');
   const openHelpSupportPage = () => history.push('/HelpSupportPage');
-  const openGoToPickupPage = () => history.push('/GoToPickup');
   const openWalletPage = () => history.push('/WalletPage');
+  const resumeActiveOrder = () => {
+    const page = getCurrentPage();
+    history.push(page || '/GoToPickup');
+  };
 
 
   return (
@@ -195,52 +182,63 @@ const HomePage: React.FC = () => {
           </IonCard>
 
 
-          {/* 🟣 Incentive Card */}
           {/* 🏆 Incentive Progress Card */}
           <IonCard className="incentive-card-home">
             <IonCardContent>
               <div className="incentive-header">
                 <h3>Today's Incentive</h3>
-                <p>Complete 10 orders to earn ₹300 bonus</p>
+                <p>
+                  {noOfDeliveries >= 10
+                    ? `🎉 You've earned ₹300 bonus — ${noOfDeliveries} orders done!`
+                    : noOfDeliveries >= 5
+                    ? `₹100 unlocked! ${incentiveTarget - noOfDeliveries} more for ₹300 bonus`
+                    : `Complete 10 orders to earn ₹300 bonus`}
+                </p>
               </div>
 
               <div className="progress-track">
                 <div className="progress-bar">
                   <div
                     className="progress-fill"
-                    style={{ width: `${Math.min((noOfDeliveries / 10) * 100, 100)}%` }} // example: 5 out of 10 orders
+                    style={{ width: `${Math.min((noOfDeliveries / incentiveTarget) * 100, 100)}%` }}
                   ></div>
                   <IonIcon
                     icon={bicycleOutline}
                     className="bike-icon"
-                    style={{ left: `${Math.min((noOfDeliveries / 10) * 100, 100)}%` }}
+                    style={{ left: `${Math.min((noOfDeliveries / incentiveTarget) * 100, 100)}%` }}
                   />
                 </div>
-                <p className="progress-text">{noOfDeliveries} / 10 orders completed</p>
+                <p className="progress-text">{noOfDeliveries} / {incentiveTarget} orders completed{incentiveAmount > 0 ? ` · ₹${incentiveAmount} earned` : ''}</p>
               </div>
             </IonCardContent>
           </IonCard>
 
-
-          {isActiveOrderAvailable && <IonCard className="active-order-card">
-            {/* 🔴 Active indicator */}
-            <div className="active-indicator"></div>
-
-            <IonCardContent>
-              <div className="active-header">
-                <IonIcon icon={bicycleOutline} size="large" color="primary" />
-                <div>
-                  <h3>Active Delivery</h3>
-                  <p>Order ID: MK-01234</p>
+          {/* 🚴 Active Delivery Card — only shown when there's an ongoing order */}
+          {activeOrder && (
+            <IonCard className="active-order-card">
+              <div className="active-indicator"></div>
+              <IonCardContent>
+                <div className="active-header">
+                  <IonIcon icon={bicycleOutline} size="large" color="primary" />
+                  <div>
+                    <h3>Active Delivery</h3>
+                    <p style={{ fontSize: 12, color: '#6b7280' }}>
+                      {activeOrder.type === 'Try & Buy' ? 'TRY & BUY' : 'STANDARD'}
+                    </p>
+                    {activeOrder.storeName && (
+                      <p style={{ fontSize: 12, marginTop: 2 }}>📍 {activeOrder.storeName}</p>
+                    )}
+                    {activeOrder.deliveryAddress && (
+                      <p style={{ fontSize: 12 }}>🏠 {activeOrder.deliveryAddress}</p>
+                    )}
+                  </div>
                 </div>
-              </div>
-
-              <IonButton expand="block" color="primary" className="start-btn" onClick={openGoToPickupPage}>
-                {/* View on Map */}
-                Order Details
-              </IonButton>
-            </IonCardContent>
-          </IonCard>}
+                <IonButton expand="block" color="primary" className="start-btn" onClick={resumeActiveOrder}>
+                  Resume Delivery
+                </IonButton>
+              </IonCardContent>
+            </IonCard>
+          )}
 
           {/* 🔹 Quick Access Grid */}
           <div className="quick-access-container">
@@ -290,7 +288,7 @@ const HomePage: React.FC = () => {
                   color="success"
                   onClick={() => {
                     // 1️⃣ Random order type
-                    const types = ["Try & Buy", "Standard"];
+                    const types = ["Try & Buy", "Standard", "Try & Buy"];
                     const randomType = types[Math.floor(Math.random() * types.length)];
 
                     // 2️⃣ Random multi-order flag
@@ -332,6 +330,19 @@ const HomePage: React.FC = () => {
                     if (isMulti) pay += 10;
 
 
+                    const tnbExtras = randomType === "Try & Buy"
+                      ? {
+                          waitingMinutes: 30,
+                          storeName: randomFrom.split(",")[0].trim(),
+                          storeAddress: randomFrom,
+                          deliveryAddress: randomTo,
+                          returnedItems: [
+                            { id: 1, name: "Blue Denim Jeans", size: "M", quantity: 1 },
+                            { id: 2, name: "White Cotton Shirt", size: "L", quantity: 2 },
+                          ],
+                        }
+                      : {};
+
                     showPopup({
                       type: randomType,
                       from: randomFrom,
@@ -339,6 +350,7 @@ const HomePage: React.FC = () => {
                       earnings: pay,
                       multi: isMulti,
                       distance: distance,
+                      ...tnbExtras,
                     });
                   }}
 

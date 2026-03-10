@@ -1,0 +1,142 @@
+/* WalkthroughStep component styles */
+
+.wt-wrapper {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.wt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.wt-step-count {
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.wt-step-name {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Progress bar */
+.wt-progress-bar-track {
+  width: 100%;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.wt-progress-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+/* Dots row */
+.wt-dots-row {
+  display: flex;
+  align-items: flex-start;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.wt-dots-row::-webkit-scrollbar {
+  display: none;
+}
+
+/* Dot wrapper: column layout for dot + label */
+.wt-dot-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Connector line between dots */
+.wt-connector {
+  flex: 1;
+  height: 2px;
+  background: #d1d5db;
+  align-self: center;
+  margin-top: -18px; /* lift up to align with dot center */
+  min-width: 8px;
+}
+
+.wt-connector.done {
+  background: var(--wt-accent, #2563eb);
+}
+
+/* Dot circle */
+.wt-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.wt-dot.done {
+  background: var(--wt-accent, #2563eb);
+  color: #ffffff;
+  border: none;
+}
+
+.wt-dot.active {
+  background: var(--wt-accent, #2563eb);
+  color: #ffffff;
+  border: none;
+  animation: wt-pulse 1.6s ease-in-out infinite;
+}
+
+.wt-dot.pending {
+  background: #ffffff;
+  color: #9ca3af;
+  border: 2px solid #d1d5db;
+}
+
+/* Dot label */
+.wt-dot-label {
+  font-size: 9px;
+  color: #9ca3af;
+  margin-top: 4px;
+  max-width: 44px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.wt-dot-label.active {
+  color: var(--wt-accent, #2563eb);
+  font-weight: 600;
+}
+
+/* Pulsing ring animation for active dot */
+@keyframes wt-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--wt-accent-rgb, 37, 99, 235), 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(var(--wt-accent-rgb, 37, 99, 235), 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--wt-accent-rgb, 37, 99, 235), 0);
+  }
+}

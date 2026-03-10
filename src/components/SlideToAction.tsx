@@ -8,6 +8,8 @@ interface SlideToActionProps {
     color?: string; // e.g., "#28a745" or "var(--ion-color-primary)"
     onSlideComplete: () => void;
     threshold?: number; // default 0.7
+    disabled?: boolean;
+    disabledText?: string;
 }
 
 const SlideToAction: React.FC<SlideToActionProps> = ({
@@ -15,6 +17,8 @@ const SlideToAction: React.FC<SlideToActionProps> = ({
     color = "var(--ion-color-success, #28a745)",
     onSlideComplete,
     threshold = 0.7,
+    disabled = false,
+    disabledText,
 }) => {
     const [sliderPosition, setSliderPosition] = useState(0);
     const sliderRef = useRef<HTMLDivElement>(null);
@@ -45,6 +49,20 @@ const SlideToAction: React.FC<SlideToActionProps> = ({
             setSliderPosition(0);
         }
     };
+
+    if (disabled) {
+        return (
+            <div
+                className="slider-button"
+                style={{ backgroundColor: "#9ca3af", opacity: 0.7, cursor: "not-allowed" }}
+            >
+                <div className="slider-handle" style={{ left: "2px", color: "#9ca3af" }}>
+                    <IonIcon icon={arrowForward} />
+                </div>
+                <span className="slider-text">{disabledText ?? text}</span>
+            </div>
+        );
+    }
 
     return (
         <div
