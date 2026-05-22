@@ -26,20 +26,44 @@ import {
   arrowForwardOutline,
 } from "ionicons/icons";
 import "./HomePage.css";
-import { useIncomingOrderPopup } from "../components/IncomingOrderPopup";
+import { useIncomingOrderPopup } from "../components/IncomingOrderPopupContext";
 import { useHistory } from 'react-router';
 import { api } from "../services/api";
 import store from "../utils/storage";
 import { mapPartnerToUser } from "../utils/helper";
-import { getCurrentPage } from "./OrderWalkthrough/walkthroughSteps";
+import { getActiveOrder, getCurrentPage } from "./OrderWalkthrough/walkthroughSteps";
+import { Preferences } from "@capacitor/preferences";
+import { getDeviceTimeZone } from "../utils/timezone";
 
 const HomePage: React.FC = () => {
-  const [isOnline, setIsOnline] = useState(false);
+  const [IsLive, setIsLive] = useState(true);
   const [activeOrder, setActiveOrder] = useState<Record<string, any> | null>(null);
   const [todaysEarnings, setTodaysEarnings] = useState({} as any);
-  const toggleLiveStatus = () => setIsOnline(!isOnline);
+  const liveStatusKey = "deliveryIsLive";
+  const { markDriverAvailable, setDriverLiveStatus } = useIncomingOrderPopup();
+
+  const updateLiveStatus = async (next: boolean) => {
+    setIsLive(next);
+    try {
+      await Preferences.set({ key: liveStatusKey, value: String(next) });
+    } catch (error) {
+      console.error("Failed to persist live status:", error);
+    }
+    // Update redis state via socket (if available)
+    if (!next) {
+      // Going offline should also clear delivering flag
+      markDriverAvailable();
+    }
+    setDriverLiveStatus(next);
+  };
+
+  const toggleLiveStatus = async () => {
+    const next = !IsLive;
+    await updateLiveStatus(next);
+  };
   const history = useHistory();
   const { showPopup } = useIncomingOrderPopup();
+  const tz = getDeviceTimeZone();
 
   const fetchProfile = async () => {
     try {
@@ -67,37 +91,46 @@ const HomePage: React.FC = () => {
     loadProfile();
   }, []);
 
+  useEffect(() => {
+    const loadLiveStatus = async () => {
+      try {
+        const { value } = await Preferences.get({ key: liveStatusKey });
+        if (value === null) {
+          await Preferences.set({ key: liveStatusKey, value: "true" });
+          setIsLive(true);
+          setDriverLiveStatus(true);
+        } else {
+          const isLive = value !== "false";
+          setIsLive(isLive);
+          setDriverLiveStatus(isLive);
+        }
+      } catch (error) {
+        console.error("Failed to load live status:", error);
+      }
+    };
+    loadLiveStatus();
+  }, []);
+
   const fetchEarnings = async (filter: string) => {
-    const data = await api.get<any>(`/partner/earnings/${filter}/details`);
+    const data = await api.get<any>(
+      `/partner/earnings/${filter}/details?tz=${encodeURIComponent(tz)}`
+    );
     setTodaysEarnings(data);
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await fetchEarnings('today');
-      } catch (error) {
-        console.error("error:", error);
-      }
-    };
-    fetchData();
-  }, []);
-
-  // Refresh active order check every time the page comes into view
+  // Refresh active order and today's earnings every time the page comes into view
   useIonViewWillEnter(() => {
-    try {
-      const raw = sessionStorage.getItem("activeOrder");
-      const parsed = raw ? JSON.parse(raw) : null;
-      setActiveOrder(parsed && Object.keys(parsed).length > 0 ? parsed : null);
-    } catch {
-      setActiveOrder(null);
-    }
+    const parsed = getActiveOrder();
+    setActiveOrder(parsed && Object.keys(parsed).length > 0 ? parsed : null);
+
+    fetchEarnings('today').catch((error) => console.error("error:", error));
   });
 
   const {
     total_earnings: totalEarningsForToday = 0,
     total_deliveries: noOfDeliveries = 0,
   } = todaysEarnings;
+  const formatMoney = (value: number | string) => Number(value || 0).toFixed(2);
 
   let incentiveAmount = 0;
   let incentiveTarget = 10;
@@ -149,10 +182,10 @@ const HomePage: React.FC = () => {
           >
             <div
               onClick={toggleLiveStatus}
-              className={`live-toggle ${isOnline ? 'online' : 'offline'}`}
+              className={`live-toggle ${IsLive ? 'online' : 'offline'}`}
             >
               <div className="toggle-ball"></div>
-              {isOnline ? (
+              {IsLive ? (
                 <span className="toggle-text live">Live</span>
               ) : (
                 <span className="toggle-text go-live">Go Live</span>
@@ -169,7 +202,7 @@ const HomePage: React.FC = () => {
           <IonCard className="earnings-card-home-page">
             <IonCardContent>
               <div className="earnings-header-home-page">
-                <h2>₹ {totalEarningsForToday}</h2>
+                <h2>₹ {formatMoney(totalEarningsForToday)}</h2>
                 <p>Today's Earnings</p>
               </div>
               <div className="earnings-sub">
@@ -348,6 +381,8 @@ const HomePage: React.FC = () => {
                       from: randomFrom,
                       to: randomTo,
                       earnings: pay,
+                      deliveryFee: pay,
+                      waitingFeeMax: randomType === "Try & Buy" ? 30 : 0,
                       multi: isMulti,
                       distance: distance,
                       ...tnbExtras,

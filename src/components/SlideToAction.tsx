@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { IonIcon } from "@ionic/react";
 import { arrowForward } from "ionicons/icons";
 import "./SlideToAction.css";
@@ -10,6 +10,8 @@ interface SlideToActionProps {
     threshold?: number; // default 0.7
     disabled?: boolean;
     disabledText?: string;
+    /** Increment to reset slider position (e.g. on Ionic page re-entry) */
+    resetTrigger?: number;
 }
 
 const SlideToAction: React.FC<SlideToActionProps> = ({
@@ -19,8 +21,14 @@ const SlideToAction: React.FC<SlideToActionProps> = ({
     threshold = 0.7,
     disabled = false,
     disabledText,
+    resetTrigger = 0,
 }) => {
     const [sliderPosition, setSliderPosition] = useState(0);
+
+    // Reset slider when parent signals (e.g. useIonViewWillEnter increments resetTrigger)
+    useEffect(() => {
+        setSliderPosition(0);
+    }, [resetTrigger]);
     const sliderRef = useRef<HTMLDivElement>(null);
     const handleRef = useRef<HTMLDivElement>(null);
 

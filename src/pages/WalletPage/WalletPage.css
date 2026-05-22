@@ -39,6 +39,12 @@
     font-size: 14px;
 }
 
+/* Actions */
+.wallet-actions {
+    margin-inline: 13px;
+    margin-bottom: 6px;
+}
+
 /* Transactions */
 .transaction-section {
     margin-top: 12px;

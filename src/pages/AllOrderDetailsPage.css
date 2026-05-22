@@ -90,3 +90,31 @@
     color: #888;
     font-size: 1rem;
 }
+
+.date-filter-card {
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    margin-bottom: 18px;
+    overflow: hidden;
+}
+
+.date-filter-item {
+    --background: transparent;
+    --padding-start: 14px;
+    --inner-padding-end: 14px;
+    --min-height: 74px;
+}
+
+.date-filter-item ion-label {
+    color: #3b331e;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.date-filter-item ion-input {
+    --padding-start: 0;
+    color: #1e1e1e;
+    font-size: 16px;
+    font-weight: 600;
+}

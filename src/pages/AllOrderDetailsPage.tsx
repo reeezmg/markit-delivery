@@ -7,15 +7,15 @@ import {
   IonBackButton,
   IonTitle,
   IonContent,
-  IonSegment,
-  IonSegmentButton,
-  IonLabel,
   IonCard,
   IonCardHeader,
   IonCardTitle,
   IonCardSubtitle,
   IonBadge,
   IonSpinner,
+  IonInput,
+  IonItem,
+  IonLabel,
 } from "@ionic/react";
 import "./AllOrderDetailsPage.css";
 import { useHistory } from "react-router";
@@ -23,63 +23,24 @@ import { Order, OrderStatus } from "../types/types";
 import { api } from "../services/api";
 import { formattedOrders } from "../utils/helper";
 import { truncate } from "../utils/stringUtils";
+import { formatLocalDateKey, getDeviceTimeZone } from "../utils/timezone";
 
 const AllOrderDetailsPage: React.FC = () => {
-  const [selectedWeek, setSelectedWeek] = useState<"current" | "last">("current");
-  const [weekDates, setWeekDates] = useState<Date[]>([]);
-  const [selectedDate, setSelectedDate] = useState<string>("");
+  const todayKey = formatLocalDateKey(new Date());
+  const [selectedDate, setSelectedDate] = useState<string>(todayKey);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const history = useHistory();
-  const isTodayFilter = new URLSearchParams(location.search).get("filter") === "today";
-  let formattedDate;
+  const tz = getDeviceTimeZone();
 
-  useEffect(() => {
-    if (isTodayFilter) {
-      const today = new Date();
-      setSelectedDate(today.toDateString());
-    }
-  }, [isTodayFilter]);
-
-  // 🧾 Format selected date → YYYY-MM-DD
-  if (selectedDate) {
-    const dateObj = new Date(selectedDate);
-    if (!isNaN(dateObj.getTime())) {
-      const year = dateObj.getFullYear();
-      const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-      const day = String(dateObj.getDate()).padStart(2, "0");
-      formattedDate = `${year}-${month}-${day}`;
-    }
-  }
-
-  // 🗓️ Compute week dates
-  const getWeekDates = (offset = 0): Date[] => {
-    const today = new Date();
-    const firstDay = today.getDate() - today.getDay() + 1 + offset * 7;
-    return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(today);
-      d.setDate(firstDay + i);
-      return d;
-    });
-  };
-
-  // 🕒 Update week and selected date
-  useEffect(() => {
-    const week = selectedWeek === "current" ? getWeekDates(0) : getWeekDates(-1);
-    setWeekDates(week);
-
-    const defaultDate =
-      selectedWeek === "current" ? new Date().toDateString() : week[0].toDateString();
-    setSelectedDate(defaultDate);
-  }, [selectedWeek]);
-
-  // 📦 Load Orders
   useEffect(() => {
     const loadOrders = async () => {
-      if (!formattedDate) return;
+      if (!selectedDate) return;
       setLoading(true);
       try {
-        const data = await api.get<Order[]>(`/orders/filter?day=${formattedDate}`);
+        const data = await api.get<Order[]>(
+          `/orders/filter?day=${encodeURIComponent(selectedDate)}&tz=${encodeURIComponent(tz)}`
+        );
         const formattedData = formattedOrders(data);
         setOrders(formattedData);
       } catch (error) {
@@ -91,7 +52,7 @@ const AllOrderDetailsPage: React.FC = () => {
     };
 
     loadOrders();
-  }, [formattedDate]);
+  }, [selectedDate, tz]);
 
   const openLastOrder = (orderId: string, order?: Order) => {
     history.push({
@@ -105,59 +66,27 @@ const AllOrderDetailsPage: React.FC = () => {
       <IonHeader>
         <IonToolbar color="primary">
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/" />
+            <IonBackButton defaultHref="/OrdersPage" />
           </IonButtons>
-          <IonTitle>{isTodayFilter ? "Today's Orders" : "All Orders"}</IonTitle>
+          <IonTitle>{selectedDate === todayKey ? "Today's Orders" : "Orders"}</IonTitle>
         </IonToolbar>
       </IonHeader>
 
       <IonContent fullscreen className="ion-padding">
-        {/* 🔘 Week Selector */}
-        {!isTodayFilter && (
-          <IonSegment
-            value={selectedWeek}
-            onIonChange={(e) => setSelectedWeek(e.detail.value as "current" | "last")}
-          >
-            <IonSegmentButton value="current">
-              <IonLabel>Current Week</IonLabel>
-            </IonSegmentButton>
-            <IonSegmentButton value="last">
-              <IonLabel>Last Week</IonLabel>
-            </IonSegmentButton>
-          </IonSegment>
-        )}
+        <div className="date-filter-card">
+          <IonItem lines="none" className="date-filter-item">
+            <IonLabel position="stacked">Filter by date</IonLabel>
+            <IonInput
+              type="date"
+              value={selectedDate}
+              max={todayKey}
+              onIonInput={(event) => setSelectedDate(String(event.detail.value || todayKey))}
+            />
+          </IonItem>
+        </div>
 
-        {/* 🗓️ Dates Bar */}
-        {!isTodayFilter && (
-          <div className="dates-bar">
-            {weekDates.map((date) => {
-              const isActive = selectedDate === date.toDateString();
-              const dayName = date
-                .toLocaleDateString("en-US", { weekday: "short" })
-                .toUpperCase();
-              const dayNum = date.getDate();
-
-              const today = new Date();
-              const isFuture = date > today;
-
-              return (
-                <div
-                  key={date.toDateString()}
-                  className={`date-item ${isActive ? "active" : ""} ${isFuture ? "disabled" : ""
-                    }`}
-                  onClick={() => !isFuture && setSelectedDate(date.toDateString())}
-                >
-                  <div className="day-name">{dayName}</div>
-                  <div className="day-number">{dayNum}</div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* 📦 Orders Section */}
         <section className="orders-section">
-          <h2>Orders</h2>
+          <h2>{selectedDate === todayKey ? "Today's Orders" : `Orders on ${selectedDate}`}</h2>
 
           {loading ? (
             <div className="loading-container">
@@ -170,7 +99,7 @@ const AllOrderDetailsPage: React.FC = () => {
                 key={order.id}
                 button
                 onClick={() => openLastOrder(order.id, order)}
-                className={`order-card ${order.status}`}
+                className={`order-card ${String(order.status || "").toLowerCase()}`}
               >
                 <IonCardHeader>
                   <IonCardTitle className="order-card-title">
@@ -192,7 +121,7 @@ const AllOrderDetailsPage: React.FC = () => {
                         color={
                           order.status === OrderStatus.Cancelled
                             ? "danger"
-                            : order.status === "pending"
+                            : String(order.status || "").toLowerCase() === "pending"
                               ? "warning"
                               : "success"
                         }
@@ -200,7 +129,7 @@ const AllOrderDetailsPage: React.FC = () => {
                       >
                         {order.status === OrderStatus.Cancelled
                           ? "Cancelled"
-                          : `₹${order.earned} Earned`}
+                          : `₹${Number(order.earned || 0).toFixed(0)} Earned`}
                       </IonBadge>
                     </div>
                   </div>

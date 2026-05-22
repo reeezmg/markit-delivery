@@ -56,7 +56,9 @@ const LoginBottomSheet: React.FC<LoginBottomSheetProps> = ({ onSubmitClicked }) 
         {/* Unified Row */}
         <div className="flex items-center border border-gray-300 rounded-lg shadow-sm bg-white">
           {/* Country Code Combobox */}
-          <Combobox value={selectedCountry} onChange={setSelectedCountry}>
+          <Combobox value={selectedCountry} onChange={(value) => {
+            if (value) setSelectedCountry(value);
+          }}>
             <div className="relative w-20">
               <Combobox.Input
                 className="w-full px-3 py-2 border-r border-gray-300 outline-none"

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
     IonPage,
     IonHeader,
@@ -7,24 +7,57 @@ import {
     IonContent,
     IonCard,
     IonCardContent,
-    IonButton,
     IonIcon,
     IonLabel,
-    IonBadge,
     IonButtons,
-    IonBackButton
+    IonBackButton,
+    IonSpinner,
 } from "@ionic/react";
-import { lockClosedOutline, chevronDownOutline, walletOutline } from "ionicons/icons";
+import { lockClosedOutline, walletOutline } from "ionicons/icons";
+import { api } from "../../services/api";
 import "./IncentiveDetailsPage.css";
+import { getDeviceTimeZone } from "../../utils/timezone";
+
+type Milestone = {
+    target: number;
+    reward: number;
+    achieved: boolean;
+};
+
+type IncentiveSummary = {
+    daily: {
+        count: number;
+        earned: number;
+        milestones: Milestone[];
+    };
+    weekly: {
+        count: number;
+        bonus: number;
+        milestones: Milestone[];
+    };
+};
 
 const IncentiveDetailsPage: React.FC = () => {
-    const milestones = [
-        { pay: 60, points: 14 },
-        { pay: 110, points: 20 },
-        { pay: 180, points: 26 },
-        { pay: 275, points: 34 },
-        { pay: 350, points: 42 },
-    ];
+    const [loading, setLoading] = useState(true);
+    const [summary, setSummary] = useState<IncentiveSummary>({
+        daily: { count: 0, earned: 0, milestones: [] },
+        weekly: { count: 0, bonus: 0, milestones: [] },
+    });
+
+    useEffect(() => {
+        let mounted = true;
+        setLoading(true);
+        const tz = getDeviceTimeZone();
+        api.get<IncentiveSummary>(`/partner/earnings/incentives?tz=${encodeURIComponent(tz)}`)
+            .then((data) => {
+                if (mounted) setSummary(data);
+            })
+            .catch((err) => console.error("Failed to load incentives:", err))
+            .finally(() => {
+                if (mounted) setLoading(false);
+            });
+        return () => { mounted = false; };
+    }, []);
 
     return (
         <IonPage>
@@ -41,72 +74,122 @@ const IncentiveDetailsPage: React.FC = () => {
                     <IonCardContent className="incentive-content-wrapper">
                         <div className="header-section">
                             <h2>Daily Milestone</h2>
-                            <p>12am - 11:59pm</p>
+                            <p>12:00am - 11:59pm</p>
                         </div>
 
-                        <div className="stats-row">
-                            <div className="stat">
-                                <div>
-                                    <IonIcon icon={walletOutline} color="primary" />
-                                    <strong>0</strong>
-                                </div>
-                                <p>touchpoints</p>
+                        {loading ? (
+                            <div style={{ display: "flex", justifyContent: "center", padding: "12px 0" }}>
+                                <IonSpinner name="crescent" color="primary" />
                             </div>
-
-                            <div className="stat">
-                                <strong>₹0</strong>
-                                <p>milestone pay</p>
-                            </div>
-                        </div>
-
-                        <div className="milestone-section">
-                            <div className="milestone-labels">
-                                <IonLabel>Milestone Pay</IonLabel>
-                                {milestones.map((m, i) => (
-                                    <span key={i}>₹{m.pay}</span>
-                                ))}
-                            </div>
-
-                            <div className="milestone-line">
-                                {milestones.map((m, i) => (
-                                    <div key={i} className="milestone-lock">
-                                        <IonIcon icon={lockClosedOutline} />
+                        ) : (
+                            <>
+                                <div className="stats-row">
+                                    <div className="stat">
+                                        <div>
+                                            <IonIcon icon={walletOutline} color="primary" />
+                                            <strong>{summary.daily.count}</strong>
+                                        </div>
+                                        <p>touchpoints</p>
                                     </div>
-                                ))}
-                            </div>
 
-                            <div className="milestone-labels touchpoints">
-                                <IonLabel className="touch-points-label">
-                                    <IonIcon icon={walletOutline} color="primary" className="label-icon" />
-                                    Touchpoints
-                                </IonLabel>
+                                    <div className="stat">
+                                        <strong>Rs {summary.daily.earned}</strong>
+                                        <p>milestone pay</p>
+                                    </div>
+                                </div>
 
-                                {milestones.map((m, i) => (
-                                    <span key={i}>{m.points}</span>
-                                ))}
-                            </div>
-                        </div>
+                                <div className="milestone-section">
+                                    <div className="milestone-labels">
+                                        <IonLabel>Milestone Pay</IonLabel>
+                                        {summary.daily.milestones.map((m, i) => (
+                                            <span key={i}>Rs {m.reward}</span>
+                                        ))}
+                                    </div>
 
-                        {/* <IonButton
-                            fill="clear"
-                            color="success"
-                            className="see-rate-btn"
-                            routerLink="/RateCardPage"
-                        >
-                            See rate card
-                            <IonIcon icon={chevronDownOutline} slot="end" />
-                        </IonButton> */}
+                                    <div className="milestone-line">
+                                        {summary.daily.milestones.map((m, i) => (
+                                            <div key={i} className={`milestone-lock ${m.achieved ? "milestone-unlocked" : ""}`}>
+                                                <IonIcon icon={lockClosedOutline} />
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="milestone-labels touchpoints">
+                                        <IonLabel className="touch-points-label">
+                                            <IonIcon icon={walletOutline} color="primary" className="label-icon" />
+                                            Touchpoints
+                                        </IonLabel>
+
+                                        {summary.daily.milestones.map((m, i) => (
+                                            <span key={i}>{m.target}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </IonCardContent>
                 </IonCard>
 
-                {/* <div className="bottom-note">
-                    <IonLabel>
-                        Maximum disputes allowed per day:
-                        <IonIcon icon={chevronDownOutline} />
-                    </IonLabel>
-                </div> */}
-            </IonContent>
+                <IonCard className="incentive-card">
+                    <IonCardContent className="incentive-content-wrapper">
+                        <div className="header-section">
+                            <h2>Weekly Bonus</h2>
+                            <p>Mon - Sun</p>
+                        </div>
 
+                        {loading ? (
+                            <div style={{ display: "flex", justifyContent: "center", padding: "12px 0" }}>
+                                <IonSpinner name="crescent" color="primary" />
+                            </div>
+                        ) : (
+                            <>
+                                <div className="stats-row">
+                                    <div className="stat">
+                                        <div>
+                                            <IonIcon icon={walletOutline} color="primary" />
+                                            <strong>{summary.weekly.count}</strong>
+                                        </div>
+                                        <p>orders this week</p>
+                                    </div>
+
+                                    <div className="stat">
+                                        <strong>Rs {summary.weekly.bonus}</strong>
+                                        <p>weekly bonus</p>
+                                    </div>
+                                </div>
+
+                                <div className="milestone-section">
+                                    <div className="milestone-labels">
+                                        <IonLabel>Bonus Pay</IonLabel>
+                                        {summary.weekly.milestones.map((m, i) => (
+                                            <span key={i}>Rs {m.reward}</span>
+                                        ))}
+                                    </div>
+
+                                    <div className="milestone-line">
+                                        {summary.weekly.milestones.map((m, i) => (
+                                            <div key={i} className={`milestone-lock ${m.achieved ? "milestone-unlocked" : ""}`}>
+                                                <IonIcon icon={lockClosedOutline} />
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="milestone-labels touchpoints">
+                                        <IonLabel className="touch-points-label">
+                                            <IonIcon icon={walletOutline} color="primary" className="label-icon" />
+                                            Orders
+                                        </IonLabel>
+
+                                        {summary.weekly.milestones.map((m, i) => (
+                                            <span key={i}>{m.target}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </IonCardContent>
+                </IonCard>
+            </IonContent>
         </IonPage>
     );
 };

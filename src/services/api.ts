@@ -9,7 +9,7 @@ export const api = {
 
         const response = await fetch(url.toString(), {
             method: 'GET',
-            headers: getHeaders()
+            headers: await getHeaders()
         });
 
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -19,7 +19,7 @@ export const api = {
     async post<T>(endpoint: string, data?: any): Promise<T> {
         const response = await fetch(`${BASE_URL}${endpoint}`, {
             method: 'POST',
-            headers: getHeaders(),
+            headers: await getHeaders(),
             body: data ? JSON.stringify(data) : undefined
         });
 
@@ -30,7 +30,7 @@ export const api = {
     async put<T>(endpoint: string, data: any): Promise<T> {
         const response = await fetch(`${BASE_URL}${endpoint}`, {
             method: 'PUT',
-            headers: getHeaders(),
+            headers: await getHeaders(),
             body: JSON.stringify(data)
         });
 
@@ -41,7 +41,7 @@ export const api = {
     async patch<T>(endpoint: string, data: any): Promise<T> {
         const response = await fetch(`${BASE_URL}${endpoint}`, {
             method: 'PATCH',
-            headers: getHeaders(),
+            headers: await getHeaders(),
             body: JSON.stringify(data)
         });
 

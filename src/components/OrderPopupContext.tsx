@@ -32,7 +32,7 @@ export const IncomingOrderPopupProvider: React.FC<{ children: React.ReactNode }>
     setVisible(true);
 
     // 🔊 Optional: Play ringtone
-    const audio = new Audio("/sounds/incoming-order.mp3");
+    const audio = new Audio("/sounds/incoming-order_.mp3");
     audio.play().catch(() => { });
   };
 

@@ -17,6 +17,7 @@ import {
     diamond,
     person,
     wallet,
+    cashOutline,
     helpCircle,
     logOutOutline,
 } from 'ionicons/icons';
@@ -28,6 +29,7 @@ interface SidebarProps {
 const menuItems = [
     // { title: 'Home', icon: home, path: '/HomePage' },
     { title: 'Earnings', icon: wallet, path: '/MyEarnings' },
+    { title: 'Payouts', icon: cashOutline, path: '/PayoutsPage' },
     { title: 'Incentives', icon: diamond, path: '/IncentiveDetailsPage' },
     { title: 'Support', icon: helpCircle, path: '/HelpSupportPage' },
     { title: 'Profile', icon: person, path: '/ProfilePage' },

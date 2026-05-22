@@ -1,6 +1,24 @@
 export const formatAddress = (...fields) =>
     fields.filter(Boolean).join(", ");
 
+const normalizeStoreWaitings = (value) => {
+    if (typeof value === "string") {
+        try {
+            return normalizeStoreWaitings(JSON.parse(value));
+        } catch {
+            return [];
+        }
+    }
+
+    if (!Array.isArray(value)) return [];
+
+    return value.map((entry) => ({
+        companyId: entry?.companyId ?? null,
+        waitingTime: Number(entry?.waitingTime ?? 0),
+        waitingFees: Number(entry?.waitingFees ?? 0),
+    }));
+};
+
 export const formattedOrders = (orders) => orders.map((order) => {
 
     const stores = order.delivery_from || [];
@@ -60,11 +78,30 @@ export const formattedOrders = (orders) => orders.map((order) => {
     const totalBill = order.subtotal - (order.total_discount || 0) + (order.shipping || 0);
 
     const earningDetails = order.earnings_details?.[0] || {};
-    const earned = earningDetails
-        ? Number(earningDetails.deliverFees || 0) +
-        Number(earningDetails.tips || 0) +
-        Number(earningDetails.waitingFees || 0)
-        : 0;
+    const deliverFees =
+        earningDetails.deliverFees ??
+        earningDetails.deliverfees ??
+        earningDetails.deliveryFees ??
+        order.deliverFees ??
+        order.deliverfees ??
+        0;
+    const waitingFees =
+        earningDetails.waitingFees ??
+        earningDetails.waitingfees ??
+        order.waitingFees ??
+        order.waitingfees ??
+        0;
+    const tips = earningDetails.tips ?? 0;
+    const storeWaitings = normalizeStoreWaitings(order.store_waitings);
+    const storeWaitingFees = storeWaitings.reduce((sum, entry) => sum + Number(entry.waitingFees ?? 0), 0);
+    const storeWaitingMinutes = storeWaitings.reduce((sum, entry) => sum + Number(entry.waitingTime ?? 0), 0);
+
+    let earned = Number(deliverFees || 0) + Number(waitingFees || 0) + Number(storeWaitingFees || 0) + Number(tips || 0);
+    if (!earned) {
+        const fallbackDelivery = Number(order.shipping || 0);
+        const fallbackWaiting = Number(order.waiting_fee || order.waitingFee || 0);
+        earned = fallbackDelivery + fallbackWaiting + storeWaitingFees;
+    }
 
     return {
         id: order.id,
@@ -75,6 +112,11 @@ export const formattedOrders = (orders) => orders.map((order) => {
         from,
         to,
         totalBill,
+        deliverFees: Number(deliverFees || 0),
+        waitingFees: Number(waitingFees || 0),
+        storeWaitingFees,
+        storeWaitingMinutes,
+        tips: Number(tips || 0),
         earned,
         status: order.order_status,
         ...order
@@ -105,11 +147,38 @@ export const mapPartnerToUser = (partnerData) => {
 export const formatDate = (date) => date ? new Date(date)
     .toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "N/A";
 
-export const formatTimeTo12Hour = (isoString: string) => {
-    const date = new Date(isoString);
-    return date.toLocaleString("en-IN", {
-        hour: "2-digit",
+export const formatTimeTo12Hour = (input: string | Date) => {
+    if (!input) return "N/A";
+
+    const raw = input instanceof Date ? input.toISOString() : String(input).trim();
+    const hasTimezone = /([zZ]|[+-]\d{2}:?\d{2})$/.test(raw);
+
+    const date = hasTimezone
+        ? new Date(raw)
+        : (() => {
+            const match = raw.match(
+                /^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?)?$/
+            );
+            if (!match) return new Date(raw);
+
+            const [, y, m, d, hh = "0", mm = "0", ss = "0", ms = "0"] = match;
+            return new Date(Date.UTC(
+                Number(y),
+                Number(m) - 1,
+                Number(d),
+                Number(hh),
+                Number(mm),
+                Number(ss),
+                Number(ms.padEnd(3, "0"))
+            ));
+        })();
+    if (Number.isNaN(date.getTime())) return "N/A";
+
+    const formatted = date.toLocaleTimeString(undefined, {
+        hour: "numeric",
         minute: "2-digit",
         hour12: true,
     });
+
+    return formatted.replace(/\b(am|pm)\b/i, (match) => match.toUpperCase());
 };

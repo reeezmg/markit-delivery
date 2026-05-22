@@ -9,12 +9,24 @@ import {
   IonContent,
   IonIcon,
   IonSpinner,
+  useIonViewWillEnter,
 } from "@ionic/react";
 import { cameraOutline } from "ionicons/icons";
 import { useHistory } from "react-router-dom";
 import SlideToAction from "../../components/SlideToAction";
 import WalkthroughStep from "../../components/WalkthroughStep";
-import { getActiveOrder, TRYNBUY_STEPS, setCurrentPage } from "./walkthroughSteps";
+import OrderNumberPill from "./OrderNumberPill";
+import {
+  getActiveOrder,
+  getSteps,
+  setCurrentPage,
+  getPickupStores,
+  getReturnStores,
+  getReturnStoreIndex,
+  setReturnStoreIndex,
+  getCurrentReturnStore,
+} from "./walkthroughSteps";
+import { postStepEvent } from "./stepEvents";
 import { api } from "../../services/api";
 import "./OrderWalkthrough.css";
 
@@ -26,6 +38,7 @@ interface ReturnedItem {
   barcode: string;
   quantity: number;
   price: number;
+  storeId?: string;
 }
 
 const TrynbuyReturnedPage: React.FC = () => {
@@ -33,15 +46,74 @@ const TrynbuyReturnedPage: React.FC = () => {
   const order = getActiveOrder();
   const trynbuyId: string | undefined = order.trynbuyId || order.trynbuy_id;
 
-  const [returnedItems, setReturnedItems] = useState<ReturnedItem[]>(() =>
-    (order.returnedItems ?? []).map((i: any) => ({
+  const [returnIdx, setReturnIdxState] = useState(getReturnStoreIndex);
+  const returnStores = getReturnStores();
+  const currentStore = returnStores[returnIdx] ?? returnStores[0] ?? {};
+  const steps = getSteps("Try & Buy");
+  const nPickup = getPickupStores().length;
+  // Submit step: one after ReturnToStore for this return store
+  const currentStep = nPickup * 2 + 7 + returnIdx * 2;
+  const storeLabel = returnStores.length > 1
+    ? `Store ${returnIdx + 1} of ${returnStores.length}`
+    : undefined;
+
+  const [sliderReset, setSliderReset] = useState(0);
+  // Refresh index + returned items on every page entry — Ionic caches this component
+  useIonViewWillEnter(() => {
+    setReturnIdxState(getReturnStoreIndex());
+    setSliderReset(r => r + 1);
+    postStepEvent(trynbuyId, "TrynbuyReturned", "enter", { storeIndex: getReturnStoreIndex() }, returnStores[getReturnStoreIndex()]?.companyId);
+
+    // Re-read returned items from persisted order state
+    const freshOrder = getActiveOrder();
+    const items = (freshOrder.returnedItems ?? []).map((i: any) => ({
       id: i.id ?? i.variant?.id,
       productName: i.productName ?? i.product?.name ?? i.name ?? "—",
-      variantName: i.variantName ?? i.variant?.name ?? "—",
+      variantName: i.variantName ?? i.variant?.name ?? i.name ?? "—",
       size: i.size ?? i.item?.size ?? "—",
       barcode: i.barcode ?? i.item?.barcode ?? "—",
       quantity: i.quantity,
-      price: i.price ?? i.variant?.dprice ?? i.variant?.sprice ?? 0,
+      price: i.price ?? i.dprice ?? i.sprice ?? i.variant?.dprice ?? i.variant?.sprice ?? 0,
+      storeId: i.storeId ?? i.variant?.companyId ?? i.product?.companyId,
+    }));
+    if (items.length > 0) setAllReturnedItems(items);
+
+    // Also re-fetch from API
+    const tid = freshOrder.trynbuyId || freshOrder.trynbuy_id;
+    if (tid) {
+      setLoading(true);
+      api.get<any>(`/orders/${tid}`)
+        .then((data) => {
+          if (Array.isArray(data.returned_items) && data.returned_items.length > 0) {
+            setAllReturnedItems(
+              data.returned_items.map((i: any) => ({
+                id: i.variant?.id ?? i.id,
+                productName: i.product?.name ?? "—",
+                variantName: i.variant?.name ?? "—",
+                size: i.item?.size ?? "—",
+                barcode: i.item?.barcode ?? "—",
+                quantity: i.quantity,
+                price: i.variant?.dprice ?? i.variant?.sprice ?? 0,
+                storeId: i.storeId ?? i.variant?.companyId ?? i.product?.companyId,
+              }))
+            );
+          }
+        })
+        .catch((err) => console.error("Failed to refresh returned items:", err))
+        .finally(() => setLoading(false));
+    }
+  });
+
+  const [allReturnedItems, setAllReturnedItems] = useState<ReturnedItem[]>(() =>
+    (order.returnedItems ?? []).map((i: any) => ({
+      id: i.id ?? i.variant?.id,
+      productName: i.productName ?? i.product?.name ?? i.name ?? "—",
+      variantName: i.variantName ?? i.variant?.name ?? i.name ?? "—",
+      size: i.size ?? i.item?.size ?? "—",
+      barcode: i.barcode ?? i.item?.barcode ?? "—",
+      quantity: i.quantity,
+      price: i.price ?? i.dprice ?? i.sprice ?? i.variant?.dprice ?? i.variant?.sprice ?? 0,
+      storeId: i.storeId ?? i.variant?.companyId ?? i.product?.companyId,
     }))
   );
   const [loading, setLoading] = useState(!!trynbuyId);
@@ -54,7 +126,7 @@ const TrynbuyReturnedPage: React.FC = () => {
     api.get<any>(`/orders/${trynbuyId}`)
       .then((data) => {
         if (Array.isArray(data.returned_items) && data.returned_items.length > 0) {
-          setReturnedItems(
+          setAllReturnedItems(
             data.returned_items.map((i: any) => ({
               id: i.variant?.id ?? i.id,
               productName: i.product?.name ?? "—",
@@ -63,6 +135,7 @@ const TrynbuyReturnedPage: React.FC = () => {
               barcode: i.item?.barcode ?? "—",
               quantity: i.quantity,
               price: i.variant?.dprice ?? i.variant?.sprice ?? 0,
+              storeId: i.storeId ?? i.variant?.companyId ?? i.product?.companyId,
             }))
           );
         }
@@ -71,8 +144,22 @@ const TrynbuyReturnedPage: React.FC = () => {
       .finally(() => setLoading(false));
   }, [trynbuyId]);
 
+  // Show only items belonging to the current return store (fall back to all items for single-store)
+  const returnedItems = currentStore.storeId
+    ? allReturnedItems.filter((i) => i.storeId === currentStore.storeId)
+    : allReturnedItems;
+
   const handleComplete = () => {
-    history.push("/DeliverySuccessPage");
+    postStepEvent(trynbuyId, "TrynbuyReturned", "complete", { storeIndex: returnIdx }, currentStore.companyId);
+    const nextIdx = returnIdx + 1;
+    if (nextIdx < returnStores.length) {
+      // More return stores remaining — advance and go back to ReturnToStore
+      setReturnStoreIndex(nextIdx);
+      history.push("/TrynbuyReturnToStore");
+    } else {
+      // All stores done
+      history.push("/DeliverySuccessPage");
+    }
   };
 
   return (
@@ -82,18 +169,24 @@ const TrynbuyReturnedPage: React.FC = () => {
           <IonButtons slot="start">
             <IonMenuButton />
           </IonButtons>
-          <IonTitle>Submit Returns</IonTitle>
+          <IonTitle>
+            {storeLabel ? `Submit Returns — ${storeLabel}` : "Submit Returns"}
+          </IonTitle>
         </IonToolbar>
       </IonHeader>
+
+      <OrderNumberPill />
 
       <IonContent fullscreen className="wt-page-bg">
         <div className="wt-content">
 
           {/* Step indicator */}
-          <WalkthroughStep current={8} steps={TRYNBUY_STEPS} accentColor="#ea580c" />
+          <WalkthroughStep current={currentStep} steps={steps} accentColor="#ea580c" />
 
           {/* TnB badge */}
-          <div className="wt-tnb-badge">TRY &amp; BUY — FINAL STEP</div>
+          <div className="wt-tnb-badge">
+            {storeLabel ? `TRY & BUY — ${storeLabel.toUpperCase()}` : "TRY & BUY — FINAL STEP"}
+          </div>
 
           {/* Store destination card */}
           <div className="wt-card">
@@ -101,22 +194,29 @@ const TrynbuyReturnedPage: React.FC = () => {
             <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
               <span style={{ fontSize: 22 }}>🏪</span>
               <div>
-                <div className="wt-address-name">{order.storeName ?? "Store"}</div>
-                <div className="wt-address-text">{order.storeAddress ?? "Store location"}</div>
+                <div className="wt-address-name">{currentStore.storeName ?? "Store"}</div>
+                <div className="wt-address-text">{currentStore.storeAddress ?? "Store location"}</div>
               </div>
             </div>
           </div>
 
           {/* Returned items card */}
           <div className="wt-card">
-            <div className="wt-card-title">Items Being Returned</div>
+            <div className="wt-card-title">
+              Items Being Returned
+              {storeLabel && (
+                <span style={{ fontWeight: 400, fontSize: 12, color: "#6b7280", marginLeft: 6 }}>
+                  ({storeLabel})
+                </span>
+              )}
+            </div>
             {loading ? (
               <div style={{ display: "flex", justifyContent: "center", padding: "16px 0" }}>
                 <IonSpinner name="crescent" color="warning" />
               </div>
             ) : returnedItems.length === 0 ? (
               <p style={{ color: "#9ca3af", fontSize: 14, marginTop: 8, textAlign: "center", padding: "12px 0" }}>
-                No items to return.
+                No items to return to this store.
               </p>
             ) : (
               <table className="wt-table">
@@ -139,7 +239,7 @@ const TrynbuyReturnedPage: React.FC = () => {
                       <td>{item.size}</td>
                       <td style={{ fontSize: 11, color: "#6b7280" }}>{item.barcode}</td>
                       <td>{item.quantity}</td>
-                      <td>₹{item.price}</td>
+                      <td>&#8377;{item.price}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -180,15 +280,16 @@ const TrynbuyReturnedPage: React.FC = () => {
         <div className="wt-bottom-location">
           <span className="wt-bottom-location-icon">🏪</span>
           <div>
-            <p className="wt-bottom-location-name">{order.storeName ?? "Store"}</p>
+            <p className="wt-bottom-location-name">{currentStore.storeName ?? "Store"}</p>
             <p className="wt-bottom-location-addr">
               Hand over the returned items to the store staff
             </p>
           </div>
         </div>
         <SlideToAction
-          text="Returns Submitted"
+          text={returnIdx + 1 < returnStores.length ? "Submitted — Next Store →" : "Returns Submitted"}
           color="#16a34a"
+          resetTrigger={sliderReset}
           onSlideComplete={handleComplete}
         />
       </div>

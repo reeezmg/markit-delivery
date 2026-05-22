@@ -13,29 +13,127 @@ import { useHistory } from "react-router-dom";
 import { io } from "socket.io-client";
 import SlideToAction from "../../components/SlideToAction";
 import WalkthroughStep from "../../components/WalkthroughStep";
-import { getActiveOrder, TRYNBUY_STEPS, setCurrentPage } from "./walkthroughSteps";
+import OrderNumberPill from "./OrderNumberPill";
+import { getActiveOrder, getSteps, setCurrentPage, getPickupStores, setActiveOrder } from "./walkthroughSteps";
+import { postStepEvent } from "./stepEvents";
+import { api } from "../../services/api";
 import "./OrderWalkthrough.css";
 
 const TrynbuyWaitingPage: React.FC = () => {
   const history = useHistory();
   const order = getActiveOrder();
-  const totalMinutes: number = order.waitingMinutes ?? 30;
+  const trynbuyId: string | undefined = order.trynbuyId || order.trynbuy_id;
+  const totalMinutes: number = Math.round(Number(order.waitingMinutes ?? order.waiting_time ?? 15) || 15);
+  const steps = getSteps("Try & Buy");
+  const nPickup = getPickupStores().length;
+  const currentStep = nPickup * 2 + 3; // Waiting comes after GoToCustomer + Delivered
 
-  const [minutes, setMinutes] = useState(totalMinutes);
-  const [seconds, setSeconds] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [customerDone, setCustomerDone] = useState(false);
   const elapsedRef = React.useRef(0);
 
+  const buildReturnStores = (returned: any[]) => {
+    const companyIds = [...new Set(returned.map((i: any) => i.companyId).filter(Boolean))];
+    const pickupStores = getPickupStores();
+    return companyIds.length > 0
+      ? pickupStores.filter(s => companyIds.includes(s.storeId))
+      : [];
+  };
+
+  const applyElapsedSeconds = (seconds: number) => {
+    const safe = Math.max(0, Math.floor(seconds || 0));
+    elapsedRef.current = safe;
+    setElapsed(safe);
+  };
+
+  /** Fetch full order from DB, update persisted order state with returned items + returnStores.
+   *  Returns true if the customer decision is recorded in DB. */
+  const fetchAndUpdateOrder = async (trynbuyId: string): Promise<boolean> => {
+    try {
+      const data = await api.get<any>(`/orders/${trynbuyId}`);
+      const status = data?.order_status;
+      const isDone = ["DECISION_DONE", "RETURNED", "COMPLETED"].includes(String(status || "").toUpperCase());
+
+      const activeOrder = getActiveOrder();
+      const dbWaitingMinutes = Number(data?.waiting_time ?? 0);
+      if (isDone && Number.isFinite(dbWaitingMinutes) && dbWaitingMinutes > 0) {
+        // waiting_time is actual only after payment is done
+        applyElapsedSeconds(dbWaitingMinutes * 60);
+      }
+      if (!isDone) return false;
+      const returned = (data.returned_items ?? []).map((ri: any) => ({
+        id: ri.variant?.id ?? ri.id,
+        name: ri.product?.name ?? "",
+        size: ri.item?.size ?? "",
+        quantity: ri.quantity,
+        companyId: ri.product?.companyId,
+      }));
+      const cartItems = Array.isArray(data.cart_items) ? data.cart_items : activeOrder.cartItems;
+      // Derive which pickup stores actually have returned items
+      const returnStores = buildReturnStores(returned);
+
+      const updated = {
+        ...activeOrder,
+        cartItems,
+        returnedItems: returned,
+        returnStores,
+        elapsedSeconds: (Number.isFinite(dbWaitingMinutes) && dbWaitingMinutes > 0)
+          ? Math.round(dbWaitingMinutes * 60)
+          : elapsedRef.current,
+        paymentMethod: data.payment_method ?? activeOrder.paymentMethod,
+        paymentAmount: activeOrder.paymentAmount ?? data.payment_amount ?? data.customer_grand_total ?? data.grand_total,
+      };
+      // Persist the refreshed order state for the later payment / success screens.
+      await setActiveOrder(updated);
+      return true;
+    } catch (err) {
+      console.error("Failed to fetch order for return data:", err);
+      return false;
+    }
+  };
+
   useEffect(() => { setCurrentPage("/TrynbuyWaiting"); }, []);
 
   // Reset on every page enter (Ionic caches pages — state survives navigation)
+  const [sliderReset, setSliderReset] = useState(0);
   useIonViewWillEnter(() => {
     setCustomerDone(false);
-    setElapsed(0);
-    elapsedRef.current = 0;
-    setMinutes(totalMinutes);
-    setSeconds(0);
+    applyElapsedSeconds(0);
+    setSliderReset(r => r + 1);
+
+    // Check DB in case customer already proceeded before this page opened (missed socket event)
+    const activeOrder = getActiveOrder();
+    const trynbuyId: string | undefined = activeOrder.trynbuyId || activeOrder.trynbuy_id;
+    if (trynbuyId) {
+      postStepEvent(trynbuyId, "TrynbuyWaiting", "enter");
+      // Ensure order is marked delivered before customer payment step
+      api.post(`/orders/${trynbuyId}/delivered`).catch(() => {});
+
+      // Customer wait starts from the durable Delivered complete event.
+      api.post<any>(`/orders/${trynbuyId}/step-elapsed`, { step: "Delivered", action: "complete" })
+        .then((data) => {
+          const secs = Number(data?.elapsed_seconds ?? 0);
+          if (Number.isFinite(secs) && secs > 0) {
+            applyElapsedSeconds(secs);
+          }
+        })
+        .catch(() => {});
+
+      // Check order status for customer-done state
+      api.post<any>(`/orders/${trynbuyId}/waiting-start`)
+        .then((data) => {
+          const status = String(data?.order_status || "").toUpperCase();
+          const dbWaitingMinutes = Number(data?.waiting_time ?? 0);
+          if (["DECISION_DONE", "RETURNED", "COMPLETED"].includes(status) && Number.isFinite(dbWaitingMinutes) && dbWaitingMinutes > 0) {
+            applyElapsedSeconds(dbWaitingMinutes * 60);
+          }
+          if (["DECISION_DONE", "RETURNED", "COMPLETED"].includes(status)) {
+            setCustomerDone(true);
+            fetchAndUpdateOrder(trynbuyId).catch(() => {});
+          }
+        })
+        .catch(() => {});
+    }
   });
 
   // Listen for customer proceed signal from server
@@ -48,19 +146,28 @@ const TrynbuyWaitingPage: React.FC = () => {
       socket.emit("joinDeliveryPartners");
     });
 
-    socket.on("customerProceedPayment", (data: { trynbuyId: string; paymentMethod: string; amount: number; returnedItems?: any[] }) => {
+    socket.on("customerProceedPayment", async (data: { trynbuyId: string; paymentMethod?: string; amount?: number; returnedItems?: any[] }) => {
       const activeOrder = getActiveOrder();
       const activeId = activeOrder.trynbuyId || activeOrder.trynbuy_id;
       if (!activeId || activeId === data.trynbuyId) {
+        // Optimistically unlock slider using socket payload, then refresh from DB
+        const returned = Array.isArray(data.returnedItems) ? data.returnedItems : [];
+        const returnStores = buildReturnStores(returned);
         const updated = {
           ...activeOrder,
-          paymentMethod: data.paymentMethod,
-          paymentAmount: data.amount,
-          returnedItems: data.returnedItems ?? [],
+          cartItems: activeOrder.cartItems ?? [],
+          returnedItems: returned,
+          returnStores,
+          paymentMethod: data.paymentMethod ?? activeOrder.paymentMethod,
+          paymentAmount: data.amount ?? activeOrder.paymentAmount,
           elapsedSeconds: elapsedRef.current,
         };
-        sessionStorage.setItem("activeOrder", JSON.stringify(updated));
+        await setActiveOrder(updated);
         setCustomerDone(true);
+
+        // Socket is just a trigger - fetch full data from DB when possible
+        const done = await fetchAndUpdateOrder(data.trynbuyId);
+        if (done) setCustomerDone(true);
       }
     });
 
@@ -68,21 +175,20 @@ const TrynbuyWaitingPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (customerDone) return;
     const timer = setInterval(() => {
-      setElapsed((e) => { elapsedRef.current = e + 1; return e + 1; });
-      setSeconds((s) => {
-        if (s > 0) return s - 1;
-        if (minutes > 0) {
-          setMinutes((m) => m - 1);
-          return 59;
-        }
-        return 0;
+      setElapsed((e) => {
+        const next = e + 1;
+        elapsedRef.current = next;
+        return next;
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [minutes]);
+  }, [customerDone]);
 
   const minutesElapsed = Math.floor(elapsed / 60);
+  const displayMinutes = minutesElapsed;
+  const displaySeconds = elapsed % 60;
   const earning = minutesElapsed;
 
   return (
@@ -96,11 +202,13 @@ const TrynbuyWaitingPage: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
+      <OrderNumberPill />
+
       <IonContent fullscreen className="wt-page-bg">
         <div className="wt-content">
 
           {/* Step indicator */}
-          <WalkthroughStep current={5} steps={TRYNBUY_STEPS} accentColor="#ea580c" />
+          <WalkthroughStep current={currentStep} steps={steps} accentColor="#ea580c" />
 
           {/* TnB badge */}
           <div className="wt-tnb-badge">
@@ -111,17 +219,17 @@ const TrynbuyWaitingPage: React.FC = () => {
           <div className="wt-card">
             <div className="wt-card-title">Waiting Time</div>
             <div className="wt-timer-display" style={{ color: "#ea580c" }}>
-              {minutes.toString().padStart(2, "0")}:{seconds.toString().padStart(2, "0")}
+              {displayMinutes.toString().padStart(2, "0")}:{displaySeconds.toString().padStart(2, "0")}
             </div>
             <div className="wt-timer-label">
-              Earning ₹1 per min while waiting (up to {totalMinutes} mins)
+              Waiting period is {totalMinutes} mins
             </div>
             <div className="wt-timer-earning">
               <div>
                 <div style={{ fontWeight: 600, fontSize: 13, color: "#16a34a" }}>Waiting Earned</div>
                 <div style={{ fontSize: 11, color: "#16a34a" }}>So far this stop</div>
               </div>
-              <div className="wt-timer-earning-amount">₹{earning}</div>
+              <div className="wt-timer-earning-amount">&#8377;{earning}</div>
             </div>
           </div>
 
@@ -175,7 +283,16 @@ const TrynbuyWaitingPage: React.FC = () => {
           color="#ea580c"
           disabled={!customerDone}
           disabledText="Waiting for customer..."
-          onSlideComplete={() => history.push("/TrynbuyReturnCollect")}
+          resetTrigger={sliderReset}
+          onSlideComplete={async () => {
+            await postStepEvent(trynbuyId, "TrynbuyWaiting", "complete", {
+              elapsedSeconds: elapsedRef.current,
+              elapsedMinutes: Math.floor(elapsedRef.current / 60),
+            });
+            const freshOrder = getActiveOrder();
+            const hasReturns = (freshOrder.returnedItems ?? []).length > 0;
+            history.push(hasReturns ? "/TrynbuyReturnCollect" : "/TrynbuyPayment");
+          }}
         />
       </div>
     </IonPage>

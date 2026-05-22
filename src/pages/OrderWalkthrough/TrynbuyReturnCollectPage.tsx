@@ -9,13 +9,15 @@ import {
   IonContent,
   IonIcon,
   IonSpinner,
+  useIonViewWillEnter,
 } from "@ionic/react";
-import { QRCodeSVG } from "qrcode.react";
 import { cameraOutline } from "ionicons/icons";
 import { useHistory } from "react-router-dom";
 import SlideToAction from "../../components/SlideToAction";
 import WalkthroughStep from "../../components/WalkthroughStep";
-import { getActiveOrder, TRYNBUY_STEPS, setCurrentPage } from "./walkthroughSteps";
+import OrderNumberPill from "./OrderNumberPill";
+import { getActiveOrder, getSteps, setCurrentPage, getPickupStores, getReturnStores, setReturnStoreIndex } from "./walkthroughSteps";
+import { postStepEvent } from "./stepEvents";
 import { api } from "../../services/api";
 import "./OrderWalkthrough.css";
 
@@ -27,29 +29,74 @@ interface ReturnedItem {
   barcode: string;
   quantity: number;
   price: number;
+  companyId?: string;
+  companyName?: string;
 }
 
 const TrynbuyReturnCollectPage: React.FC = () => {
   const history = useHistory();
   const order = getActiveOrder();
   const trynbuyId: string | undefined = order.trynbuyId || order.trynbuy_id;
+  const steps = getSteps("Try & Buy");
+  const nPickup = getPickupStores().length;
+  const currentStep = nPickup * 2 + 4; // Get Returns step
+  const returnStores = getReturnStores();
+  const firstReturnStore = returnStores[0];
+  const returnDestinationName = returnStores.length > 1
+    ? `${firstReturnStore.storeName ?? "Store 1"} + ${returnStores.length - 1} more`
+    : (firstReturnStore.storeName ?? order.storeName ?? "Store");
+  const returnDestinationAddr = returnStores.length > 1
+    ? `Returning to ${returnStores.length} stores`
+    : (firstReturnStore.storeAddress ?? order.storeAddress ?? "Return to store");
 
-  // Seed from sessionStorage (set by socket event), then overwrite with API data
+  // Seed from persisted order state (set by socket event), then overwrite with API data
+  const mapReturnedItem = (i: any): ReturnedItem => ({
+    id: i.id ?? i.variant?.id,
+    productName: i.productName ?? i.product?.name ?? i.name ?? "—",
+    variantName: i.variantName ?? i.variant?.name ?? "—",
+    size: i.size ?? i.item?.size ?? "—",
+    barcode: i.barcode ?? i.item?.barcode ?? "—",
+    quantity: i.quantity,
+    price: i.price ?? i.variant?.dprice ?? i.variant?.sprice ?? 0,
+    companyId: i.companyId ?? i.product?.companyId,
+    companyName: i.companyName ?? i.product?.companyName,
+  });
+
   const [returnedItems, setReturnedItems] = useState<ReturnedItem[]>(() =>
-    (order.returnedItems ?? []).map((i: any) => ({
-      id: i.id ?? i.variant?.id,
-      productName: i.productName ?? i.product?.name ?? i.name ?? "—",
-      variantName: i.variantName ?? i.variant?.name ?? "—",
-      size: i.size ?? i.item?.size ?? "—",
-      barcode: i.barcode ?? i.item?.barcode ?? "—",
-      quantity: i.quantity,
-      price: i.price ?? i.variant?.dprice ?? i.variant?.sprice ?? 0,
-    }))
+    (order.returnedItems ?? []).map(mapReturnedItem)
   );
   const [loading, setLoading] = useState(!!trynbuyId);
   const [photo, setPhoto] = useState<string | null>(null);
 
-  useEffect(() => { setCurrentPage("/TrynbuyReturnCollect"); }, []);
+  useEffect(() => {
+    setCurrentPage("/TrynbuyReturnCollect");
+    // Reset so the return-store loop always starts at store 0
+    setReturnStoreIndex(0);
+  }, []);
+
+  const [sliderReset, setSliderReset] = useState(0);
+  // Re-read returned items on every page entry (Ionic caches this component)
+  useIonViewWillEnter(() => {
+    setSliderReset(r => r + 1);
+    postStepEvent(trynbuyId, "TrynbuyReturnCollect", "enter");
+    const freshOrder = getActiveOrder();
+    const items = (freshOrder.returnedItems ?? []).map(mapReturnedItem);
+    if (items.length > 0) setReturnedItems(items);
+
+    // Also re-fetch from API for rich data
+    const tid = freshOrder.trynbuyId || freshOrder.trynbuy_id;
+    if (tid) {
+      setLoading(true);
+      api.get<any>(`/orders/${tid}`)
+        .then((data) => {
+          if (Array.isArray(data.returned_items) && data.returned_items.length > 0) {
+            setReturnedItems(data.returned_items.map(mapReturnedItem));
+          }
+        })
+        .catch((err) => console.error("Failed to refresh returned items:", err))
+        .finally(() => setLoading(false));
+    }
+  });
 
   // Always fetch from API for rich data (barcode, price) + refresh resilience
   useEffect(() => {
@@ -58,17 +105,7 @@ const TrynbuyReturnCollectPage: React.FC = () => {
     api.get<any>(`/orders/${trynbuyId}`)
       .then((data) => {
         if (Array.isArray(data.returned_items) && data.returned_items.length > 0) {
-          setReturnedItems(
-            data.returned_items.map((i: any) => ({
-              id: i.variant?.id ?? i.id,
-              productName: i.product?.name ?? "—",
-              variantName: i.variant?.name ?? "—",
-              size: i.item?.size ?? "—",
-              barcode: i.item?.barcode ?? "—",
-              quantity: i.quantity,
-              price: i.variant?.dprice ?? i.variant?.sprice ?? 0,
-            }))
-          );
+          setReturnedItems(data.returned_items.map(mapReturnedItem));
         }
       })
       .catch((err) => console.error("Failed to fetch order details:", err))
@@ -93,40 +130,16 @@ const TrynbuyReturnCollectPage: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
+      <OrderNumberPill />
+
       <IonContent fullscreen className="wt-page-bg">
         <div className="wt-content">
 
           {/* Step indicator */}
-          <WalkthroughStep current={6} steps={TRYNBUY_STEPS} accentColor="#ea580c" />
+          <WalkthroughStep current={currentStep} steps={steps} accentColor="#ea580c" />
 
           {/* TnB badge */}
           <div className="wt-tnb-badge">TRY &amp; BUY — COLLECT RETURNS</div>
-
-          {/* Payment info card */}
-          {order.paymentMethod === "CASH" && (
-            <div className="wt-card" style={{ textAlign: "center" }}>
-              <div className="wt-card-title">Payment — Cash</div>
-              <div style={{ fontSize: 36, fontWeight: 800, color: "#16a34a", margin: "8px 0" }}>
-                ₹{order.paymentAmount ?? 0}
-              </div>
-              <div style={{ fontSize: 13, color: "#6b7280" }}>Collect cash from customer</div>
-            </div>
-          )}
-
-          {order.paymentMethod === "UPI" && (
-            <div className="wt-card" style={{ textAlign: "center" }}>
-              <div className="wt-card-title">Payment — UPI</div>
-              <div style={{ display: "flex", justifyContent: "center", margin: "12px 0" }}>
-                <QRCodeSVG
-                  value={`upi://pay?pa=9538340789@ibl&am=${order.paymentAmount ?? 0}&cu=INR&tn=Markit+TryBuy`}
-                  size={180}
-                />
-              </div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 2 }}>9538340789@ibl</div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: "#2563eb" }}>₹{order.paymentAmount ?? 0}</div>
-              <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>Ask customer to scan and pay</div>
-            </div>
-          )}
 
           {/* Returned items card */}
           <div className="wt-card">
@@ -140,33 +153,64 @@ const TrynbuyReturnCollectPage: React.FC = () => {
               <p style={{ color: "#9ca3af", fontSize: 14, marginTop: 8, textAlign: "center", padding: "12px 0" }}>
                 Customer kept all items — nothing to return.
               </p>
-            ) : (
-              <table className="wt-table">
-                <thead>
-                  <tr>
-                    <th>Product</th>
-                    <th>Size</th>
-                    <th>Barcode</th>
-                    <th>Qty</th>
-                    <th>Price</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {returnedItems.map((item, idx) => (
-                    <tr key={item.id ?? idx}>
-                      <td>
-                        <div style={{ fontWeight: 600 }}>{item.productName}</div>
-                        <div style={{ fontSize: 11, color: "#6b7280" }}>{item.variantName}</div>
-                      </td>
-                      <td>{item.size}</td>
-                      <td style={{ fontSize: 11, color: "#6b7280" }}>{item.barcode}</td>
-                      <td>{item.quantity}</td>
-                      <td>₹{item.price}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+            ) : (() => {
+              // Group by store if companyId available
+              const storeNameById = new Map(
+                returnStores
+                  .filter((s) => s.storeId)
+                  .map((s) => [s.storeId as string, s.storeName ?? "Store"])
+              );
+              const groups: Record<string, { storeName: string; items: ReturnedItem[] }> = {};
+              for (const item of returnedItems) {
+                const key = item.companyId ?? "_all";
+                if (!groups[key]) {
+                  const storeName = item.companyName ?? (item.companyId ? storeNameById.get(item.companyId) : undefined);
+                  groups[key] = { storeName: storeName ?? "Store", items: [] };
+                }
+                groups[key].items.push(item);
+              }
+              const orderedKeys = returnStores
+                .map((s) => s.storeId)
+                .filter((id): id is string => !!id && !!groups[id]);
+              const extraKeys = Object.keys(groups).filter((key) => !orderedKeys.includes(key));
+              const groupEntries = [...orderedKeys, ...extraKeys].map((key) => [key, groups[key]] as const);
+              const multiGroup = groupEntries.length > 1;
+
+              return groupEntries.map(([key, group]) => (
+                <div key={key} style={multiGroup ? { marginBottom: 16 } : undefined}>
+                  {multiGroup && (
+                    <div style={{ fontWeight: 600, fontSize: 13, color: "#374151", marginBottom: 4, marginTop: 8 }}>
+                      {group.storeName}
+                    </div>
+                  )}
+                  <table className="wt-table">
+                    <thead>
+                      <tr>
+                        <th>Product</th>
+                        <th>Size</th>
+                        <th>Barcode</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {group.items.map((item, idx) => (
+                        <tr key={item.id ?? idx}>
+                          <td>
+                            <div style={{ fontWeight: 600 }}>{item.productName}</div>
+                            <div style={{ fontSize: 11, color: "#6b7280" }}>{item.variantName}</div>
+                          </td>
+                          <td>{item.size}</td>
+                          <td style={{ fontSize: 11, color: "#6b7280" }}>{item.barcode}</td>
+                          <td>{item.quantity}</td>
+                          <td>&#8377;{item.price}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ));
+            })()}
           </div>
 
           {/* Store destination card */}
@@ -175,8 +219,8 @@ const TrynbuyReturnCollectPage: React.FC = () => {
             <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
               <span style={{ fontSize: 22 }}>🏪</span>
               <div>
-                <div className="wt-address-name">{order.storeName ?? "Store"}</div>
-                <div className="wt-address-text">{order.storeAddress ?? "Return to store"}</div>
+                <div className="wt-address-name">{returnDestinationName}</div>
+                <div className="wt-address-text">{returnDestinationAddr}</div>
               </div>
             </div>
           </div>
@@ -211,19 +255,15 @@ const TrynbuyReturnCollectPage: React.FC = () => {
 
       {/* Fixed bottom bar */}
       <div className="wt-bottom-bar">
-        <div className="wt-bottom-location">
-          <span className="wt-bottom-location-icon">🏪</span>
-          <div>
-            <p className="wt-bottom-location-name">{order.storeName ?? "Store"}</p>
-            <p className="wt-bottom-location-addr">
-              {order.storeAddress ?? "Return items to the store"}
-            </p>
-          </div>
-        </div>
+
         <SlideToAction
-          text="Returns Collected"
+          text="Proceed to Payment"
           color="#ea580c"
-          onSlideComplete={() => history.push("/TrynbuyReturnToStore")}
+          resetTrigger={sliderReset}
+          onSlideComplete={() => {
+            postStepEvent(trynbuyId, "TrynbuyReturnCollect", "complete");
+            history.push("/TrynbuyPayment");
+          }}
         />
       </div>
     </IonPage>
@@ -231,3 +271,4 @@ const TrynbuyReturnCollectPage: React.FC = () => {
 };
 
 export default TrynbuyReturnCollectPage;
+

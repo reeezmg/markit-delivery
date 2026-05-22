@@ -13,30 +13,81 @@ import { motion, AnimatePresence } from "framer-motion";
 import { generateOtp, login, signUp } from "../api/auth";
 import "./LoginPage.css";
 
+const LOGIN_STATE_KEY = "markit:dpLoginState";
+const OTP_TTL_MS = 10 * 60 * 1000;
+const RESEND_COOLDOWN_SEC = 120;
+
+type LoginMode = "start" | "loginPhone" | "signupPhone" | "otp";
+
+type PersistedLoginState = {
+  mode: LoginMode;
+  phone: string;
+  fullPhone: string;
+  otpSentAt: number;
+};
+
+function readPersistedLoginState(): PersistedLoginState | null {
+  try {
+    const raw = localStorage.getItem(LOGIN_STATE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as PersistedLoginState;
+    if (!parsed?.otpSentAt || Date.now() - parsed.otpSentAt > OTP_TTL_MS) {
+      localStorage.removeItem(LOGIN_STATE_KEY);
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
 const LoginPage: React.FC = () => {
   const history = useHistory();
 
-  const [mode, setMode] =
-    useState<"start" | "loginPhone" | "signupPhone" | "otp">("start");
+  const persisted = readPersistedLoginState();
 
-  const [phone, setPhone] = useState("");
+  const [mode, setMode] = useState<LoginMode>(persisted?.mode ?? "start");
+
+  const [phone, setPhone] = useState(persisted?.phone ?? "");
   const [name, setName] = useState("");
   const [otp, setOtp] = useState("");
-  const [fullPhone, setFullPhone] = useState("");
+  const [fullPhone, setFullPhone] = useState(persisted?.fullPhone ?? "");
 
   const [toast, setToast] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   // OTP Timer
-  const [counter, setCounter] = useState(0);
+  const [counter, setCounter] = useState(() => {
+    if (!persisted?.otpSentAt) return 0;
+    const elapsedSec = Math.floor((Date.now() - persisted.otpSentAt) / 1000);
+    return Math.max(0, RESEND_COOLDOWN_SEC - elapsedSec);
+  });
   const timerRef = useRef<any>(null);
 
-  useEffect(() => {
-    return () => timerRef.current && clearInterval(timerRef.current);
-  }, []);
+  const persistState = (
+    nextMode: LoginMode,
+    nextPhone: string,
+    nextFullPhone: string,
+    nextOtpSentAt: number | null
+  ) => {
+    if (nextMode === "otp" && nextOtpSentAt) {
+      localStorage.setItem(
+        LOGIN_STATE_KEY,
+        JSON.stringify({
+          mode: nextMode,
+          phone: nextPhone,
+          fullPhone: nextFullPhone,
+          otpSentAt: nextOtpSentAt,
+        })
+      );
+    } else {
+      localStorage.removeItem(LOGIN_STATE_KEY);
+    }
+  };
 
-  const startTimer = () => {
-    setCounter(60);
+  const startTimer = (initial: number = RESEND_COOLDOWN_SEC) => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setCounter(initial);
     timerRef.current = setInterval(() => {
       setCounter((x) => {
         if (x <= 1) {
@@ -47,6 +98,12 @@ const LoginPage: React.FC = () => {
       });
     }, 1000);
   };
+
+  useEffect(() => {
+    if (counter > 0) startTimer(counter);
+    return () => timerRef.current && clearInterval(timerRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const normalize = (val: string) => val.replace(/\D/g, "").slice(0, 10);
 
@@ -61,11 +118,13 @@ const LoginPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const res = await generateOtp(formatted);
+      await generateOtp(formatted);
 
-      // If server returns non-200, this will not run
+      const now = Date.now();
       showToast("OTP Sent!", "success");
       setMode("otp");
+      setOtpDigits(["", "", "", "", "", ""]);
+      persistState("otp", phone, formatted, now);
       startTimer();
     } catch (err: any) {
       const code = err?.response?.data?.code;
@@ -87,16 +146,40 @@ const LoginPage: React.FC = () => {
   const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
   const otpRefs = useRef<Array<HTMLInputElement | null>>([]);
 
+  const fillOtpDigits = (raw: string) => {
+    const cleaned = raw.replace(/\D/g, "").slice(0, 6);
+    if (!cleaned) return;
+    const next = ["", "", "", "", "", ""];
+    for (let i = 0; i < cleaned.length; i++) next[i] = cleaned[i];
+    setOtpDigits(next);
+    const focusIdx = Math.min(cleaned.length, 5);
+    otpRefs.current[focusIdx]?.focus();
+  };
+
   const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const value = e.target.value.replace(/\D/g, "");
     if (!value) return;
+
+    if (value.length > 1) {
+      fillOtpDigits(value);
+      return;
+    }
 
     const newOtp = [...otpDigits];
     newOtp[index] = value;
     setOtpDigits(newOtp);
 
-    // Move to next box
     if (index < 5) otpRefs.current[index + 1]?.focus();
+  };
+
+  const handleOtpPaste = (
+    e: React.ClipboardEvent<HTMLInputElement>,
+    _index: number
+  ) => {
+    const pasted = e.clipboardData.getData("text");
+    if (!pasted) return;
+    e.preventDefault();
+    fillOtpDigits(pasted);
   };
 
   const handleOtpKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
@@ -120,6 +203,7 @@ const LoginPage: React.FC = () => {
     try {
       await login(fullPhone, otp);
 
+      localStorage.removeItem(LOGIN_STATE_KEY);
       showToast("Login Successful", "success");
 
       if (mode === "otp" && name.trim()) {
@@ -142,13 +226,26 @@ const LoginPage: React.FC = () => {
 
   const resendOtp = async () => {
     if (counter > 0) return;
-    await generateOtp(fullPhone);
-    showToast("OTP Resent!", "primary");
-    startTimer();
+    try {
+      await generateOtp(fullPhone);
+      const now = Date.now();
+      persistState("otp", phone, fullPhone, now);
+      showToast("OTP Resent!", "primary");
+      startTimer();
+    } catch (err: any) {
+      const message = err?.response?.data?.error || "Failed to resend OTP";
+      showToast(message, "danger");
+    }
   };
 
   const showToast = (msg: string, color: string = "primary") =>
     setToast({ msg, color });
+
+  const formatCounter = (total: number) => {
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+    return m > 0 ? `${m}:${String(s).padStart(2, "0")}` : `${s}s`;
+  };
 
   // ------------------ UI VIEWS ------------------
 
@@ -217,10 +314,13 @@ const LoginPage: React.FC = () => {
             key={index}
             ref={(el) => { otpRefs.current[index] = el; }}
             type="tel"
-            maxLength={1}
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={6}
             className="otp-box"
             value={digit}
             onChange={(e) => handleOtpChange(e as React.ChangeEvent<HTMLInputElement>, index)}
+            onPaste={(e) => handleOtpPaste(e as React.ClipboardEvent<HTMLInputElement>, index)}
             onKeyDown={(e) => handleOtpKeyDown(e as React.KeyboardEvent<HTMLInputElement>, index)}
           />
         ))}
@@ -235,7 +335,7 @@ const LoginPage: React.FC = () => {
           Resend
         </button>
         <span className="timer">
-          {counter > 0 ? `${counter}s` : ""}
+          {counter > 0 ? `${formatCounter(counter)}` : ""}
         </span>
       </div>
 

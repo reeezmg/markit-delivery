@@ -15,7 +15,6 @@ import {
   IonGrid,
   IonRow,
   IonCol,
-  IonBadge
 } from '@ionic/react';
 import './LastOrderDetailsPage.css';
 import { useLocation, useParams } from 'react-router';
@@ -32,6 +31,8 @@ const LastOrderDetailsPage: React.FC = () => {
   const location = useLocation<{ order }>();
   const order = location.state?.order;
   const { orderId } = useParams<{ orderId: string }>();
+
+  const formatMoney = (value: any) => `₹${Number(value || 0).toFixed(2)}`;
 
   const loadLastOrder = async () => {
     try {
@@ -54,29 +55,23 @@ const LastOrderDetailsPage: React.FC = () => {
 
   console.log(orderDetail, 'order-routed', isLastOrder);
 
-  const items = orderDetail?.cart_items?.map((d) => ({
-    name: `${d.variant.code} ${d.variant.name} ${d.item.size}`,
-    qty: d.quantity,
-    price: d.variant.sprice,
-  }));
-
-
   const orderDetails = [
     { label: 'Customer Name', value: orderDetail?.clientDetails?.name || '' },
     { label: 'From', value: orderDetail?.from || '' },
     { label: 'To', value: orderDetail?.to || '' },
-    { label: 'Start Time:', value: orderDetail?.pickup_time || '12 PM' },
-    { label: 'End Time', value: formatTimeTo12Hour(orderDetail?.delivery_time) || '12:30 PM' },
+    { label: 'Start Time:', value: formatTimeTo12Hour(orderDetail?.created_at || orderDetail?.pickup_time) },
+    { label: 'End Time', value: formatTimeTo12Hour(orderDetail?.delivery_time) },
   ];
 
   const paymentDetails = [
-    { label: 'Delivery Fee', value: orderDetail?.deliverFees || '₹0' },
-    { label: 'Waiting Charges', value: orderDetail?.waitingFees || '₹0' },
-    { label: 'Tip', value: orderDetail?.tip || '₹0' },
+    { label: 'Delivery Fee', value: formatMoney(orderDetail?.deliverFees) },
+    { label: 'Waiting Charges', value: formatMoney(orderDetail?.waitingFees) },
+    { label: 'Store Waiting Charges', value: formatMoney(orderDetail?.storeWaitingFees) },
+    { label: 'Tip', value: formatMoney(orderDetail?.tip) },
   ];
 
   const totalDeliveryCharges = {
-    value: orderDetail?.earned,
+    value: formatMoney(orderDetail?.earned),
   }
 
   console.log(orderDetail?.fromStoreList, 'orderDetail?.fromStoreList');
@@ -139,21 +134,6 @@ const LastOrderDetailsPage: React.FC = () => {
 
 
               <IonCardHeader className='order-title-header-wrapper'>
-                <IonCardTitle className='order-summary-title'>Order Summary</IonCardTitle>
-              </IonCardHeader>
-              <IonGrid>
-                <IonRow className='item-listing-header'>
-                  <IonCol>Item</IonCol>
-                  <IonCol>Qty</IonCol>
-                </IonRow>
-                {items?.map((item, index) => (
-                  <IonRow key={index} className='order-details-summary-row'>
-                    <IonCol>{item.name}</IonCol>
-                    <IonCol className='order-value-col'>{item.qty}</IonCol>
-                  </IonRow>
-                ))}
-              </IonGrid>
-              <IonCardHeader className='order-title-header-wrapper'>
                 <IonCardTitle className='order-summary-title'>Payment Details</IonCardTitle>
               </IonCardHeader>
               <IonGrid>
@@ -171,7 +151,7 @@ const LastOrderDetailsPage: React.FC = () => {
               <div
                 className='total-collected-amount-wrapper'
               >
-                <IonLabel>Total Collected: </IonLabel> {orderDetail?.totalBill || '₹0'}
+                <IonLabel>Total Collected: </IonLabel> {formatMoney(orderDetail?.totalBill)}
               </div>
 
             </IonCardContent>

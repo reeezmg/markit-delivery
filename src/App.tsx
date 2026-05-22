@@ -44,18 +44,23 @@ import DeliveredPage from "./pages/OrderWalkthrough/DeliveredPage";
 import DeliverySuccessPage from "./pages/OrderWalkthrough/DeliverySuccessPage";
 import TrynbuyWaitingPage from "./pages/OrderWalkthrough/TrynbuyWaitingPage";
 import TrynbuyReturnCollectPage from "./pages/OrderWalkthrough/TrynbuyReturnCollectPage";
+import TrynbuyPaymentPage from "./pages/OrderWalkthrough/TrynbuyPaymentPage";
 import TrynbuyReturnToStorePage from "./pages/OrderWalkthrough/TrynbuyReturnToStorePage";
 import TrynbuyReturnedPage from "./pages/OrderWalkthrough/TrynbuyReturnedPage";
 import WalletPage from "./pages/WalletPage/WalletPage";
+import PayoutsPage from "./pages/PayoutsPage/PayoutsPage";
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { Capacitor } from "@capacitor/core";
 import SignupDetailsPage from "./pages/SignUpDetailsPage";
 import VerificationPendingScreen from "./pages/VerificationPendingScreen";
 
-StatusBar.setStyle({ style: Style.Dark }); // or Style.Light
-StatusBar.setBackgroundColor({ color: '#ffffff' });
-
-
-setupIonicReact();
+if (Capacitor.isNativePlatform()) {
+  StatusBar.setStyle({ style: Style.Dark }); // or Style.Light
+  StatusBar.setBackgroundColor({ color: '#ffffff' });
+}
+setupIonicReact({
+  swipeBackEnabled: false,
+});
 
 const AppContent: React.FC = () => {
   const isLoggedIn = !!localStorage.getItem("CapacitorStorage.token");
@@ -99,9 +104,11 @@ const AppContent: React.FC = () => {
           <Route path="/DeliverySuccessPage" component={DeliverySuccessPage} exact />
           <Route path="/TrynbuyWaiting" component={TrynbuyWaitingPage} exact />
           <Route path="/TrynbuyReturnCollect" component={TrynbuyReturnCollectPage} exact />
+          <Route path="/TrynbuyPayment" component={TrynbuyPaymentPage} exact />
           <Route path="/TrynbuyReturnToStore" component={TrynbuyReturnToStorePage} exact />
           <Route path="/TrynbuyReturned" component={TrynbuyReturnedPage} exact />
           <Route path="/WalletPage" component={WalletPage} exact />
+          <Route path="/PayoutsPage" component={PayoutsPage} exact />
 
         </IonRouterOutlet>
 

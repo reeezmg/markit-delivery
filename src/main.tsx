@@ -16,11 +16,15 @@ import '@ionic/react/css/display.css';
 
 /* ✅ Your custom theme variables */
 import './theme/variables.css';
+import { initWalkthroughStorage } from './pages/OrderWalkthrough/walkthroughSteps';
 
 const container = document.getElementById('root');
 const root = createRoot(container!);
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+
+void initWalkthroughStorage().finally(() => {
+  root.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+});

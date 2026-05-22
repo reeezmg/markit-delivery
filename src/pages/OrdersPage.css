@@ -102,3 +102,17 @@ ion-card-header {
 .order-card.scheduled {
   border-left: 4px solid #f59e0b;
 }
+
+.order-card.empty {
+  border-left: 4px solid #cbd5e1;
+  opacity: 0.88;
+}
+
+.orders-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 18px;
+  color: #64748b;
+  font-size: 14px;
+}

@@ -69,61 +69,63 @@
     margin: 0;
 }
 
-.milestone-labels {
-    display: flex;
-    justify-content: space-between;
+/* Unified milestone grid */
+.milestone-labels,
+.milestone-line,
+.milestone-labels.touchpoints {
+    display: grid;
+    grid-template-columns: 1.2fr repeat(7, minmax(28px, 1fr));
     align-items: center;
+    column-gap: 6px;
     margin: 8px 0;
     font-size: 14px;
-    color: #333;
     padding: 0;
 }
 
 .milestone-labels span {
     font-weight: 600;
     color: var(--text-dark);
+    text-align: center;
 }
 
 .milestone-line {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 14px 0;
     position: relative;
-    padding: 0 8px;
+    margin: 12px 0 4px;
 }
 
 .milestone-line::before {
     content: "";
     position: absolute;
     top: 50%;
-    left: 6%;
-    right: 6%;
+    left: 24%;
+    right: 4%;
     height: 2px;
-    background: #f3b3b3;
+    background: #f5b2b2;
     z-index: 0;
+    transform: translateY(-50%);
+}
+
+.milestone-line > :first-child {
+    visibility: hidden;
 }
 
 .milestone-lock {
     background: #f8d7da;
     border-radius: 50%;
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #a50505;
-    font-size: 17px;
+    color: #d62828;
+    font-size: 16px;
     z-index: 1;
+    margin: 0 auto;
 }
 
 .milestone-labels.touchpoints span {
     color: #555;
-}
-
-.touchpoints-wrapper {
-    display: flex;
-    justify-content: space-between;
+    text-align: center;
 }
 
 .touch-points-label {
@@ -133,10 +135,6 @@
     font-size: 14px;
     font-weight: 600;
     color: #333;
-
-    .label-icon {
-            font-size: 16px;
-        }
 }
 
 .see-rate-btn {
@@ -165,65 +163,7 @@
     margin-top: 20px;
 }
 
-.milestone-labels {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 8px 0;
-    font-size: 14px;
-    font-weight: 600;
-    padding: 0;
-}
-
-.milestone-line {
-    position: relative;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 12px 0 4px;
-    padding: 0 1% 0 34.5%;
-}
-
-.milestone-line::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 28px;
-    right: 28px;
-    height: 2px;
-    background: #f5b2b2;
-    z-index: 0;
-}
-
-.milestone-lock {
-    background: #f8d7da;
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #d62828;
-    font-size: 16px;
-    z-index: 10;
-}
-
-.milestone-labels.touchpoints {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    font-size: 14px;
-    margin-top: 4px;
-}
-
-.milestone-labels.touchpoints> :not(:first-child) {
-    margin-right: 10px;
-    font-weight: 400;
-}
-
-.milestone-labels.touchpoints span {
-    width: 52px;
-    text-align: end;
-    font-weight: 500;
-    color: #333;
+.milestone-unlocked {
+    background: #dcfce7;
+    color: #16a34a;
 }

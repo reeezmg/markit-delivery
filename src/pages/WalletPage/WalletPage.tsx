@@ -1,3 +1,4 @@
+import React, { useMemo, useState } from "react";
 import {
     IonPage,
     IonHeader,
@@ -12,6 +13,10 @@ import {
     IonLabel,
     IonButtons,
     IonBackButton,
+    IonButton,
+    IonAlert,
+    IonToast,
+    useIonViewWillEnter,
 } from "@ionic/react";
 import {
     walletOutline,
@@ -19,16 +24,64 @@ import {
     arrowDownOutline,
     arrowUpOutline,
 } from "ionicons/icons";
+import { api } from "../../services/api";
 import "./WalletPage.css";
+import { getDeviceTimeZone } from "../../utils/timezone";
+
+type WalletTransaction = {
+    id: string;
+    amount: number;
+    direction: "CREDIT" | "DEBIT";
+    source?: string;
+    note?: string;
+    trynbuy_id?: string | null;
+    createdAt?: string;
+};
 
 const WalletPage: React.FC = () => {
-    const transactions = [
-        { id: 1, type: "COD", label: "Order Delivery", amount: 250, isCredit: true },
-        { id: 2, type: "Debit", label: "Cash Withdrawal", amount: 100, isCredit: false },
-        { id: 3, type: "COD", label: "Order Delivery", amount: 300, isCredit: true },
-        { id: 4, type: "Debit", label: "Cash Withdrawal", amount: 150, isCredit: false },
-        { id: 5, type: "COD", label: "Order Delivery", amount: 400, isCredit: true },
-    ];
+    const [cashInHand, setCashInHand] = useState(0);
+    const [earnedThisWeek, setEarnedThisWeek] = useState(0);
+    const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [showDeposit, setShowDeposit] = useState(false);
+    const [toastMessage, setToastMessage] = useState("");
+    const [toastColor, setToastColor] = useState<"success" | "danger">("success");
+
+    const refreshWallet = async () => {
+        setLoading(true);
+        try {
+            const tz = getDeviceTimeZone();
+            const [walletRes, earningsRes] = await Promise.all([
+                api.get<{ cashInHand: number; transactions: WalletTransaction[] }>("/partner/wallet"),
+                api.get<{ total_earnings?: string | number }>(
+                    `/partner/earnings/week?tz=${encodeURIComponent(tz)}`
+                ),
+            ]);
+
+            setCashInHand(Number(walletRes.cashInHand || 0));
+            setTransactions(walletRes.transactions || []);
+            setEarnedThisWeek(Number(earningsRes.total_earnings || 0));
+        } catch (err) {
+            setToastColor("danger");
+            setToastMessage("Failed to load wallet data");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useIonViewWillEnter(() => {
+        refreshWallet();
+    });
+
+    const txLabel = useMemo(
+        () => (tx: WalletTransaction) => {
+            if (tx.note) return tx.note;
+            if (tx.source === "COD") return "Cash Collected";
+            if (tx.source === "DEPOSIT") return "Deposit";
+            return tx.direction === "CREDIT" ? "Wallet Credit" : "Wallet Debit";
+        },
+        []
+    );
 
     return (
         <IonPage>
@@ -47,7 +100,7 @@ const WalletPage: React.FC = () => {
                     <IonCard className="summary-card">
                         <IonCardContent>
                             <IonIcon icon={walletOutline} size="large" color="success" />
-                            <h2>₹2,450</h2>
+                            <h2>Rs {earnedThisWeek.toFixed(0)}</h2>
                             <p>Earned This Week</p>
                         </IonCardContent>
                     </IonCard>
@@ -55,10 +108,20 @@ const WalletPage: React.FC = () => {
                     <IonCard className="summary-card">
                         <IonCardContent>
                             <IonIcon icon={cashOutline} size="large" color="warning" />
-                            <h2>₹1,200</h2>
+                            <h2>Rs {cashInHand.toFixed(0)}</h2>
                             <p>Cash In Hand</p>
                         </IonCardContent>
                     </IonCard>
+                </div>
+
+                <div className="wallet-actions">
+                    <IonButton
+                        expand="block"
+                        color="primary"
+                        onClick={() => setShowDeposit(true)}
+                    >
+                        Deposit Cash
+                    </IonButton>
                 </div>
 
                 {/* Transaction Section */}
@@ -69,29 +132,94 @@ const WalletPage: React.FC = () => {
                             <IonItem key={tx.id} lines="full" className="transaction-item">
                                 <IonIcon
                                     slot="start"
-                                    icon={tx.isCredit ? arrowDownOutline : arrowUpOutline}
-                                    color={tx.isCredit ? "success" : "danger"}
+                                    icon={tx.direction === "CREDIT" ? arrowDownOutline : arrowUpOutline}
+                                    color={tx.direction === "CREDIT" ? "success" : "danger"}
                                 />
                                 <IonLabel>
-                                    <h2>{tx.label}</h2>
-                                    <p>{tx.type}</p>
+                                    <h2>{txLabel(tx)}</h2>
+                                    <p>{tx.source || "Wallet"}</p>
                                 </IonLabel>
                                 <IonLabel
                                     slot="end"
-                                    className={tx.isCredit ? "amount-credit" : "amount-debit"}
+                                    className={tx.direction === "CREDIT" ? "amount-credit" : "amount-debit"}
                                 >
                                     <span
                                         className="amount-symbol"
-                                        style={{ color: tx.isCredit ? 'var(--ion-color-success)' : 'var(--ion-color-danger)' }}
+                                        style={{
+                                            color:
+                                                tx.direction === "CREDIT"
+                                                    ? "var(--ion-color-success)"
+                                                    : "var(--ion-color-danger)",
+                                        }}
                                     >
-                                        {tx.isCredit ? "+" : "-"}
+                                        {tx.direction === "CREDIT" ? "+" : "-"}
                                     </span>
-                                    ₹{tx.amount}
+                                    Rs {Number(tx.amount || 0).toFixed(0)}
                                 </IonLabel>
                             </IonItem>
                         ))}
+                        {!loading && transactions.length === 0 && (
+                            <IonItem lines="none" className="transaction-item">
+                                <IonLabel>No transactions yet</IonLabel>
+                            </IonItem>
+                        )}
                     </IonList>
                 </div>
+
+                <IonAlert
+                    isOpen={showDeposit}
+                    onDidDismiss={() => setShowDeposit(false)}
+                    header="Deposit Cash"
+                    inputs={[
+                        {
+                            name: "amount",
+                            type: "number",
+                            placeholder: "Amount",
+                            min: 1,
+                        },
+                        {
+                            name: "note",
+                            type: "text",
+                            placeholder: "Note (optional)",
+                        },
+                    ]}
+                    buttons={[
+                        { text: "Cancel", role: "cancel" },
+                        {
+                            text: "Deposit",
+                            handler: async (data) => {
+                                const amount = Number(data?.amount || 0);
+                                if (!amount || amount <= 0) {
+                                    setToastColor("danger");
+                                    setToastMessage("Enter a valid amount");
+                                    return false;
+                                }
+
+                                try {
+                                    await api.post("/partner/wallet/deposit", {
+                                        amount,
+                                        note: data?.note || null,
+                                    });
+                                    setToastColor("success");
+                                    setToastMessage("Deposit recorded");
+                                    refreshWallet();
+                                } catch (err) {
+                                    setToastColor("danger");
+                                    setToastMessage("Deposit failed");
+                                }
+                                return true;
+                            },
+                        },
+                    ]}
+                />
+
+                <IonToast
+                    isOpen={!!toastMessage}
+                    message={toastMessage}
+                    duration={1800}
+                    color={toastColor}
+                    onDidDismiss={() => setToastMessage("")}
+                />
             </IonContent>
         </IonPage>
     );
